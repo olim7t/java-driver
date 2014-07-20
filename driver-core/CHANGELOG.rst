@@ -24,6 +24,7 @@ CHANGELOG
 - [bug] Make metadata parsing more lenient (JAVA-377, JAVA-391)
 - [bug] Ensure defunct connections are completely closed (JAVA-394)
 - [bug] Fix memory and resource leak on closed Sessions (JAVA-342, JAVA-390)
+- [bug] Check cluster name when connecting to a new node (JAVA-397)
 
 
 2.0.3:

@@ -1291,6 +1291,9 @@ public class Cluster implements Closeable {
                 scheduledAttempt.cancel(false);
             }
 
+            if (!matchesClusterName(host, false))
+                return;
+
             try {
                 prepareAllQueries(host);
             } catch (InterruptedException e) {
@@ -1531,6 +1534,9 @@ public class Cluster implements Closeable {
                 return;
             }
 
+            if (!matchesClusterName(host, true))
+                return;
+
             // Adds to the load balancing first and foremost, as doing so might change the decision
             // it will make for distance() on that node (not likely but we leave that possibility).
             // This does mean the policy may start returning that node for query plan, but as long
@@ -1647,6 +1653,49 @@ public class Cluster implements Closeable {
 
         private boolean supportsProtocolV2(Host newHost) {
             return newHost.getCassandraVersion() == null || newHost.getCassandraVersion().getMajor() >= 2;
+        }
+
+        // Due to C* gossip bugs, system.peers may report nodes that are gone from the cluster.
+        // If these nodes have been recommissionned to another cluster and are up, nothing prevents the driver from connecting
+        // to them. So we check that the cluster the node thinks it belongs to is our cluster (JAVA-397).
+        private boolean matchesClusterName(Host host, boolean isHostAddition) throws InterruptedException {
+            Connection connection = null;
+            try {
+                // TODO like for reconnection, this is a bit wasteful because we open a connection for just one request.
+                // We could keep it and pass it to the pool creation.
+                connection = connectionFactory.open(host);
+                DefaultResultSetFuture future = new DefaultResultSetFuture(null,new Requests.Query("select cluster_name from system.local"));
+                connection.write(future);
+                Row row = future.get().one();
+                String hostClusterName = row.getString("cluster_name");
+                if (!metadata.clusterName.equals(hostClusterName)) {
+                    logger.warn("Host {} reports cluster name '{}' that doesn't match than our cluster name '{}'. "
+                                    + "This host will be ignored.",
+                                host, hostClusterName, metadata.clusterName);
+                    return false;
+                }
+                return true;
+            } catch (UnsupportedProtocolVersionException e) {
+                logUnsupportedVersionProtocol(host);
+                return false;
+            } catch (BusyConnectionException e) {
+                logger.error("Connection busy while checking new node's cluster", e);
+                triggerOnDown(host, isHostAddition);
+                return false;
+            } catch (ConnectionException e) {
+                logger.error("Connection error while checking new node's cluster", e);
+                triggerOnDown(host, isHostAddition);
+                return false;
+            } catch (ExecutionException e) {
+                logger.error("Unexpected error while checking new node's cluster", e);
+                triggerOnDown(host, isHostAddition);
+                return false;
+            } catch (InterruptedException e) {
+                throw e;
+            } finally {
+                if (connection != null)
+                    connection.closeAsync().force();
+            }
         }
 
         public void removeHost(Host host, boolean isInitialConnection) {
