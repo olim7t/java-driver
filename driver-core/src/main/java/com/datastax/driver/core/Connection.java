@@ -387,9 +387,27 @@ class Connection {
         // New writes will be refused now that the future is setup.
         // We must now wait on the last ongoing queries to return, which will in turn trigger
         // the closing of the channel. However, if there no ongoing query, signal now.
-        if (dispatcher.pending.isEmpty())
-            future.force();
+        boolean terminated = terminate(false);
+        if (!terminated)
+            factory.reaper.register(this);
         return future;
+    }
+
+    boolean terminate(boolean evenIfPending) {
+        assert isClosed();
+        ConnectionCloseFuture future = closeFuture.get();
+
+        if (future.isDone()) {
+            logger.debug("Terminate {}: already done", this);
+            return true;
+        } else if (evenIfPending || dispatcher.pending.isEmpty()) {
+            logger.debug("Terminate {}: forcing (evenIfPending = {})", this, evenIfPending);
+            future.force();
+            return true;
+        } else {
+            logger.debug("Terminate {}: requests still pending", this);
+            return false;
+        }
     }
 
     @Override
@@ -409,6 +427,7 @@ class Connection {
         private final ConcurrentMap<Host, AtomicInteger> idGenerators = new ConcurrentHashMap<Host, AtomicInteger>();
         public final DefaultResponseHandler defaultHandler;
         final Cluster.Manager manager;
+        final Cluster.ConnectionReaper reaper;
         public final Configuration configuration;
 
         public final AuthProvider authProvider;
@@ -419,6 +438,7 @@ class Connection {
         Factory(Cluster.Manager manager, Configuration configuration) {
             this.defaultHandler = manager;
             this.manager = manager;
+            this.reaper = manager.reaper;
             this.configuration = configuration;
             this.authProvider = configuration.getProtocolOptions().getAuthProvider();
             this.protocolVersion = configuration.getProtocolOptions().initialProtocolVersion;
