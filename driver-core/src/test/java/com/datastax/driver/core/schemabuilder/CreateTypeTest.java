@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateTypeTest {
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_UDT() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
@@ -38,7 +38,7 @@ public class CreateTypeTest {
                 "col2 bigint)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_UDT_if_not_exists() throws Exception {
         //When
         final String built = SchemaBuilder.createType("myType")
@@ -53,7 +53,7 @@ public class CreateTypeTest {
                 "col2 bigint)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_simple_UDT_column() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
@@ -68,7 +68,7 @@ public class CreateTypeTest {
                 "my_udt frozen<address>)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_list_UDT_column() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
@@ -83,7 +83,7 @@ public class CreateTypeTest {
                 "my_udt list<frozen<address>>)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_set_UDT_column() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
@@ -98,7 +98,7 @@ public class CreateTypeTest {
                 "my_udt set<frozen<address>>)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_key_UDT_map_column() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
@@ -113,7 +113,7 @@ public class CreateTypeTest {
                 "my_udt map<frozen<address>, text>)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_value_UDT_map_column() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
@@ -128,7 +128,7 @@ public class CreateTypeTest {
                 "my_udt map<int, frozen<address>>)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_key_value_UDT_map_column() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
@@ -143,7 +143,7 @@ public class CreateTypeTest {
                 "my_udt map<frozen<coords>, frozen<address>>)");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_column_with_manual_type() throws Exception {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")

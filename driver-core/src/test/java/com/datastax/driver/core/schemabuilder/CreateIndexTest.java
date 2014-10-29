@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 
 public class CreateIndexTest {
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_index() throws Exception {
         //Given //When
         final String statement = SchemaBuilder.createIndex("myIndex").ifNotExists().onTable("ks", "test").andColumn("col");

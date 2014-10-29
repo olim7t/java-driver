@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 
 public class CompactionOptionsTest {
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_sized_tiered_compaction_options() throws Exception {
         //When
         final String build = TableOptions.CompactionOptions
@@ -40,7 +40,7 @@ public class CompactionOptionsTest {
         assertThat(build).isEqualTo("{'class' : 'SizeTieredCompactionStrategy', 'enabled' : true, 'max_threshold' : 4, 'tombstone_compaction_interval' : 3, 'tombstone_threshold' : 0.7, 'bucket_high' : 1.2, 'bucket_low' : 0.5, 'cold_reads_to_omit' : 0.89, 'min_threshold' : 2, 'min_sstable_size' : 5000000}");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_create_leveled_compaction_option() throws Exception {
         //When
         final String build = TableOptions.CompactionOptions
@@ -56,7 +56,7 @@ public class CompactionOptionsTest {
         assertThat(build).isEqualTo("{'class' : 'LeveledCompactionStrategy', 'enabled' : true, 'max_threshold' : 5, 'tombstone_compaction_interval' : 3, 'tombstone_threshold' : 0.7, 'sstable_size_in_mb' : 160}");
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ration_out_of_range() throws Exception {
         TableOptions.CompactionOptions
                 .sizedTieredStategy()
@@ -66,7 +66,7 @@ public class CompactionOptionsTest {
                 .build();
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ration_negative() throws Exception {
         TableOptions.CompactionOptions
                 .sizedTieredStategy()
@@ -76,7 +76,7 @@ public class CompactionOptionsTest {
                 .build();
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_out_of_range() throws Exception {
         TableOptions.CompactionOptions
                 .sizedTieredStategy()
@@ -86,7 +86,7 @@ public class CompactionOptionsTest {
                 .build();
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_negative() throws Exception {
         TableOptions.CompactionOptions
                 .sizedTieredStategy()

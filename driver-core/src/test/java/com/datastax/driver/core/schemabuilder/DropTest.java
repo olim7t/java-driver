@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DropTest {
 
-    @Test
+    @Test(groups = "unit")
     public void should_drop_table() throws Exception {
         //When
         final String built = SchemaBuilder.dropTable("test").build();
@@ -30,7 +30,7 @@ public class DropTest {
         assertThat(built).isEqualTo("DROP TABLE test");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_drop_table_with_keyspace() throws Exception {
         //When
         final String built = SchemaBuilder.dropTable("ks", "test").build();
@@ -39,7 +39,7 @@ public class DropTest {
         assertThat(built).isEqualTo("DROP TABLE ks.test");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_drop_table_with_keyspace_if_exists() throws Exception {
         //When
         final String built = SchemaBuilder.dropTable("ks", "test").ifExists(true).build();
@@ -48,13 +48,13 @@ public class DropTest {
         assertThat(built).isEqualTo("DROP TABLE IF EXISTS ks.test");
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
         expectedExceptionsMessageRegExp = "The keyspace name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_keyspace_name_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.dropTable("add","test").build();
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.dropTable("add").build();

@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 public class AlterTest {
 
 
-    @Test
+    @Test(groups = "unit")
     public void should_alter_column_type() throws Exception {
         //When
         final String built = SchemaBuilder.alterTable("test").alterColumn("name").type(DataType.ascii());
@@ -33,7 +33,7 @@ public class AlterTest {
         assertThat(built).isEqualTo("\n\tALTER TABLE test ALTER name TYPE ascii");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_alter_column_type_with_keyspace() throws Exception {
         //When
         final String built = SchemaBuilder.alterTable("ks", "test").alterColumn("name").type(DataType.ascii());
@@ -42,7 +42,7 @@ public class AlterTest {
         assertThat(built).isEqualTo("\n\tALTER TABLE ks.test ALTER name TYPE ascii");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_add_column() throws Exception {
         //When
         final String built = SchemaBuilder.alterTable("test").addColumn("location").type(DataType.ascii());
@@ -51,7 +51,7 @@ public class AlterTest {
         assertThat(built).isEqualTo("\n\tALTER TABLE test ADD location ascii");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_rename_column() throws Exception {
         //When
         final String built = SchemaBuilder.alterTable("test").renameColumn("name").to("description");
@@ -60,7 +60,7 @@ public class AlterTest {
         assertThat(built).isEqualTo("\n\tALTER TABLE test RENAME name TO description");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_drop_column() throws Exception {
         //When
         final String built = SchemaBuilder.alterTable("test").dropColumn("name");
@@ -69,7 +69,7 @@ public class AlterTest {
         assertThat(built).isEqualTo("\n\tALTER TABLE test DROP name");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_alter_table_options() throws Exception {
         //When
         final String built = SchemaBuilder.alterTable("test").withOptions()
@@ -107,56 +107,56 @@ public class AlterTest {
                 "AND speculative_retry = 'ALWAYS'");
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The keyspace name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_keyspace_name_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.alterTable("add","test")
                 .addColumn("test").type(DataType.ascii());
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.alterTable("add")
                 .addColumn("test").type(DataType.ascii());
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The new column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_added_column_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.alterTable("test")
                 .addColumn("add").type(DataType.ascii());
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The altered column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_altered_column_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.alterTable("test")
                 .alterColumn("add").type(DataType.ascii());
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The renamed column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_renamed_column_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.alterTable("test")
                 .renameColumn("add");
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The new column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_new_renamed_column_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.alterTable("test")
                 .renameColumn("col").to("add");
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The dropped column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_drop_column_is_a_reserved_keyword() throws Exception {
         SchemaBuilder.alterTable("test")
                 .dropColumn("add");
     }
 
-    @Test
+    @Test(groups = "unit")
     public void should_add_static_column() throws Exception {
         //When
         final String alterTable = SchemaBuilder.alterTable("test").addStaticColumn("stat").type(DataType.text());
