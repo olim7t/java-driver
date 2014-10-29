@@ -24,6 +24,7 @@ public class CreateIndex extends SchemaStatement {
     private Optional<String> keyspaceName = Optional.absent();
     private String tableName;
     private String columnName;
+    private boolean keys;
 
 
     CreateIndex(String indexName) {
@@ -54,7 +55,6 @@ public class CreateIndex extends SchemaStatement {
         validateNotKeyWord(keyspaceName, String.format("The keyspace name '%s' is not allowed because it is a reserved keyword", keyspaceName));
         validateNotKeyWord(tableName, String.format("The table name '%s' is not allowed because it is a reserved keyword", tableName));
         this.keyspaceName = Optional.fromNullable(keyspaceName);
-        ;
         this.tableName = tableName;
         return new CreateIndexOn();
     }
@@ -78,9 +78,22 @@ public class CreateIndex extends SchemaStatement {
          * @return the final CREATE INDEX statement
          */
         public String andColumn(String columnName) {
-            validateNotEmpty(tableName, "Column name");
+            validateNotEmpty(columnName, "Column name");
             validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
             CreateIndex.this.columnName = columnName;
+            return buildInternal();
+        }
+
+        /**
+         * Create an index on the keys of the given map column.
+         * @param columnName
+         * @return the final CREATE INDEX statement
+         */
+        public String andKeysOfColumn(String columnName) {
+            validateNotEmpty(columnName, "Column name");
+            validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
+            CreateIndex.this.columnName = columnName;
+            CreateIndex.this.keys = true;
             return buildInternal();
         }
     }
@@ -101,6 +114,19 @@ public class CreateIndex extends SchemaStatement {
         }
         createStatement.append(tableName);
 
-        return createStatement.append(OPEN_PAREN).append(columnName).append(CLOSE_PAREN).toString();
+        createStatement.append(OPEN_PAREN);
+        if (keys) {
+            createStatement.append(KEYS);
+            createStatement.append(OPEN_PAREN);
+        }
+
+        createStatement.append(columnName);
+
+        if (keys) {
+            createStatement.append(CLOSE_PAREN);
+        }
+        createStatement.append(CLOSE_PAREN);
+
+        return createStatement.toString();
     }
 }

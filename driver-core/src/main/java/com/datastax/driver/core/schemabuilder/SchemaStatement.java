@@ -63,6 +63,7 @@ public abstract class SchemaStatement {
 
     static final String CREATE_INDEX = "CREATE INDEX";
     static final String ON = "ON";
+    static final String KEYS = "KEYS";
 
 
     static final List<String> RESERVED_KEYWORDS = Arrays.asList("add,allow,alter,and,any,apply,asc,authorize,batch,begin,by,columnfamily,create,delete,desc,drop,each_quorum,from,grant,in,index,inet,infinity,insert,into,keyspace,keyspaces,limit,local_one,local_quorum,modify,nan,norecursive,of,on,order,password,primary,quorum,rename,revoke,schema,select,set,table,three,to,token,truncate,two,unlogged,update,use,using,where,with".split(","));
