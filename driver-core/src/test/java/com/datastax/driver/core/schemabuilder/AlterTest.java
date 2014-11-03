@@ -15,7 +15,10 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
+import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.NONE;
 import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.ROWS_ONLY;
+import static com.datastax.driver.core.schemabuilder.TableOptions.CachingRowsPerPartition.rows;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.driver.core.DataType;
@@ -72,6 +75,8 @@ public class AlterTest {
     @Test(groups = "unit")
     public void should_alter_table_options() throws Exception {
         //When
+        // Note that this does not necessarily represent a valid configuration, the goal is just to test all options
+        // (some of which might be specific to C* 2.0 or 2.1)
         final String built = SchemaBuilder.alterTable("test").withOptions()
                 .bloomFilterFPChance(0.01)
                 .caching(ROWS_ONLY)
@@ -81,13 +86,19 @@ public class AlterTest {
                 .dcLocalReadRepairChance(0.21)
                 .defaultTimeToLive(100)
                 .gcGraceSeconds(9999L)
+                .indexInterval(256)
                 .minIndexInterval(64)
                 .maxIndexInterval(512)
                 .memtableFlushPeriodInMillis(12L)
-                .populateIOOnCacheFlush(true)
+                .populateIOCacheOnFlush(true)
                 .replicateOnWrite(true)
+                .readRepairChance(0.42)
                 .speculativeRetry(TableOptions.SpeculativeRetryValue.always())
                 .build();
+
+        final String builtWith21Caching = SchemaBuilder.alterTable("test").withOptions()
+            .caching(NONE, rows(100))
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tALTER TABLE test " +
@@ -99,12 +110,17 @@ public class AlterTest {
                 "AND dclocal_read_repair_chance = 0.21 " +
                 "AND default_time_to_live = 100 " +
                 "AND gc_grace_seconds = 9999 " +
+                "AND index_interval = 256 " +
                 "AND min_index_interval = 64 " +
                 "AND max_index_interval = 512 " +
                 "AND memtable_flush_period_in_ms = 12 " +
                 "AND populate_io_cache_on_flush = true " +
+                "AND read_repair_chance = 0.42 " +
                 "AND replicate_on_write = true " +
                 "AND speculative_retry = 'ALWAYS'");
+
+        assertThat(builtWith21Caching).isEqualTo("\n\tALTER TABLE test " +
+                "WITH caching = {'keys' : 'none', 'rows_per_partition' : 100}");
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,

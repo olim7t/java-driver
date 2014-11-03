@@ -318,7 +318,7 @@ public class CreateTest {
                 .minIndexInterval(64)
                 .maxIndexInterval(512)
                 .memtableFlushPeriodInMillis(12L)
-                .populateIOOnCacheFlush(true)
+                .populateIOCacheOnFlush(true)
                 .replicateOnWrite(true)
                 .speculativeRetry(TableOptions.SpeculativeRetryValue.always())
                 .build();

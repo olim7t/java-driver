@@ -66,6 +66,7 @@ public abstract class TableOptions<T extends TableOptions> {
 
     private Optional<Long> gcGraceSeconds = Optional.absent();
 
+    private Optional<Integer> indexInterval = Optional.absent();
     private Optional<Integer> minIndexInterval = Optional.absent();
     private Optional<Integer> maxIndexInterval = Optional.absent();
 
@@ -99,24 +100,22 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Define the number of rows to be cached per partition when Row Caching is enabled. This feature is only applicable to Cassandra 2.1.x
-     * <ul>
-     *     <li>NONE: Do not cache rows.</li>
-     *     <li>ALL: cache all rows for a given partition.<strong>Be careful when choosing this option, you can starve quickly Cassandra memory if your partition is very large</strong></li>
-     *     <li>int: define a number of rows to cache.</li>
-     * </ul>
-     *
-     * Use the static methods on {@link com.datastax.driver.core.schemabuilder.TableOptions.CachingRowsPerPartition} to build the option
+     * Define the caching options for Cassandra 2.1.x
      * <p>
-     *     Default caching type = ALL
-     *     Default rows_per_partition = NONE
+     *     Defaults:  keys = ALL, rows_per_partition = NONE
      * </p>
-     * @param caching caching type. Available values are NONE, ALL
-     * @param rowsPerPartition number of rows to cache per partition. Possible values are NONE, ALL or an integer number
+     * @param keys the key cache type. Available values are NONE, ALL
+     * @param rowsPerPartition defines the number of rows to be cached per partition when Row Caching is enabled.
+     *   <ul>
+     *       <li>NONE: Do not cache rows.</li>
+     *       <li>ALL: cache all rows for a given partition.<strong>Be careful when choosing this option, you can starve quickly Cassandra memory if your partition is very large</strong></li>
+     *       <li>int: define a number of rows to cache.</li>
+     *   </ul>
+     *   Use the static methods on {@link com.datastax.driver.core.schemabuilder.TableOptions.CachingRowsPerPartition} to build the option
      * @return this table options
      */
-    public T caching(Caching caching, CachingRowsPerPartition rowsPerPartition) {
-        this.caching = Optional.fromNullable(caching);
+    public T caching(Caching keys, CachingRowsPerPartition rowsPerPartition) {
+        this.caching = Optional.fromNullable(keys);
         this.cachingRowsPerPartition = Optional.fromNullable(rowsPerPartition);
         return (T) this;
     }
@@ -211,6 +210,31 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
+     * The index_interval (Cassandra 2.0) property controls the sampling of entries from the primary row index,
+     * configure sample frequency of the partition summary by changing the index interval.
+     * After changing the index interval, SSTables are written to disk with new information.
+     *
+     * The interval corresponds to the number of index entries that are skipped between taking each sample.
+     * By default Cassandra samples one row key out of every 128.
+     * The larger the interval, the smaller and less effective the sampling.
+     * The larger the sampling, the more effective the index, but with increased memory usage.
+     * In Cassandra 2.0.x, generally, the best trade off between memory usage and performance is a value between
+     * 128 and 512 in combination with a large table key cache.
+     * However, if you have small rows (many to an OS page), you may want to increase the sample size,
+     * which often lowers memory usage without an impact on performance.
+     * For large rows, decreasing the sample size may improve read performance.
+     * <p>
+     *     If not set, default = 128
+     * </p>
+     * @param indexInterval index interval
+     * @return this table options
+     */
+    public T indexInterval(Integer indexInterval) {
+        this.indexInterval = Optional.fromNullable(indexInterval);
+        return (T) this;
+    }
+
+    /**
      * The min_index_interval and max_index_interval (Cassandra 2.1) properties control the sampling of entries from the primary row index,
      * configure sample frequency of the partition summary by changing the index interval.
      * After changing the index interval, SSTables are written to disk with new information.
@@ -281,7 +305,7 @@ public abstract class TableOptions<T extends TableOptions> {
      * @param populateIOOnCacheFlush whether populate IO cache on flush of sstables
      * @return this table options
      */
-    public T populateIOOnCacheFlush(Boolean populateIOOnCacheFlush) {
+    public T populateIOCacheOnFlush(Boolean populateIOOnCacheFlush) {
         this.populateIOOnCacheFlush = Optional.fromNullable(populateIOOnCacheFlush);
         return (T) this;
     }
@@ -393,6 +417,10 @@ public abstract class TableOptions<T extends TableOptions> {
 
         if (gcGraceSeconds.isPresent()) {
             options.add(new StringBuilder("gc_grace_seconds").append(OPTION_ASSIGNMENT).append(gcGraceSeconds.get()).toString());
+        }
+
+        if (indexInterval.isPresent()) {
+            options.add(new StringBuilder("index_interval").append(OPTION_ASSIGNMENT).append(indexInterval.get()).toString());
         }
 
         if (minIndexInterval.isPresent()) {
