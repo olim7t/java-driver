@@ -542,29 +542,20 @@ public abstract class TableOptions<T extends TableOptions> {
 
         private Strategy strategy;
 
-        private Optional<Double> bucketHigh = Optional.absent();
-
-        private Optional<Double> bucketLow = Optional.absent();
-
-        private Optional<Double> coldReadsRatioToOmit = Optional.absent();
-
-        private Optional<Boolean> enableAutoCompaction = Optional.absent();
-
-        private Optional<Integer> minThreshold = Optional.absent();
-
-        private Optional<Integer> maxThreshold = Optional.absent();
-
-        private Optional<Long> minSSTableSizeInBytes = Optional.absent();
-
-        private Optional<Integer> ssTableSizeInMB = Optional.absent();
+        private Optional<Boolean> enableBackgroundCompaction = Optional.absent();
 
         private Optional<Integer> tombstoneCompactionIntervalInDay = Optional.absent();
 
         private Optional<Double> tombstoneThreshold = Optional.absent();
 
+        private Optional<Boolean> uncheckedTombstoneCompaction = Optional.absent();
 
+        private T self;
+
+        @SuppressWarnings("unchecked")
         private CompactionOptions(Strategy compactionStrategy) {
             this.strategy = compactionStrategy;
+            self = (T)this;
         }
 
         /**
@@ -583,31 +574,21 @@ public abstract class TableOptions<T extends TableOptions> {
             return new LeveledCompactionStrategyOptions();
         }
 
+        public static DateTieredCompactionStrategyOptions dateTieredStrategy() {
+            return new DateTieredCompactionStrategyOptions();
+        }
+
         /**
          * Enables or disables background compaction
          * <p>
          *     If not set, default = true
          * </p>
-         * @param enableAutoCompaction whether to enable auto compaction for the table
+         * @param enableBackgroundCompaction whether to enable background compaction for the table
          * @return this compaction options
          */
-        public T enableAutoCompaction(Boolean enableAutoCompaction) {
-            this.enableAutoCompaction = Optional.fromNullable(enableAutoCompaction);
-            return (T) this;
-        }
-
-        /**
-         * In SizeTieredCompactionStrategy, sets the maximum number of SSTables to allow in a minor compaction.
-         * In LeveledCompactionStrategy (LCS), it applies to L0 when L0 gets behind, that is, when L0 accumulates more than MAX_COMPACTING_L0 SSTables.
-         * <p>
-         *     If not set, default = 32
-         * </p>
-         * @param maxThreshold max threshold
-         * @return this compaction options
-         */
-        public T maxThreshold(Integer maxThreshold) {
-            this.maxThreshold = Optional.fromNullable(maxThreshold);
-            return (T) this;
+        public T enableBackgroundCompaction(Boolean enableBackgroundCompaction) {
+            this.enableBackgroundCompaction = Optional.fromNullable(enableBackgroundCompaction);
+            return self;
         }
 
         /**
@@ -621,7 +602,7 @@ public abstract class TableOptions<T extends TableOptions> {
          */
         public T tombstoneCompactionIntervalInDay(Integer tombstoneCompactionInterval) {
             this.tombstoneCompactionIntervalInDay = Optional.fromNullable(tombstoneCompactionInterval);
-            return (T) this;
+            return self;
         }
 
         /**
@@ -636,7 +617,23 @@ public abstract class TableOptions<T extends TableOptions> {
         public T tombstoneThreshold(Double tombstoneThreshold) {
             validateRateValue(tombstoneThreshold, "Tombstone threshold");
             this.tombstoneThreshold = Optional.fromNullable(tombstoneThreshold);
-            return (T) this;
+            return self;
+        }
+
+        /**
+         * Enables more aggressive than normal tombstone compactions. A single SSTable tombstone compaction runs without
+         * checking the likelihood of success.
+         * <p>
+         * If not set, default = false.
+         * <p>
+         * Cassandra 2.0.9 and later.
+         *
+         * @param uncheckedTombstoneCompaction whether to enable the feature.
+         * @return this compaction options
+         */
+        public T uncheckedTombstoneCompaction(Boolean uncheckedTombstoneCompaction) {
+            this.uncheckedTombstoneCompaction = Optional.fromNullable(uncheckedTombstoneCompaction);
+            return self;
         }
 
 
@@ -645,12 +642,8 @@ public abstract class TableOptions<T extends TableOptions> {
             List<String> options = new ArrayList<String>();
             options.add(new StringBuilder("'class'").append(VALUE_SEPARATOR).append(strategy.strategyClass()).toString());
 
-            if (enableAutoCompaction.isPresent()) {
-                options.add(new StringBuilder("'enabled'").append(VALUE_SEPARATOR).append(enableAutoCompaction.get()).toString());
-            }
-
-            if (maxThreshold.isPresent()) {
-                options.add(new StringBuilder("'max_threshold'").append(VALUE_SEPARATOR).append(maxThreshold.get()).toString());
+            if (enableBackgroundCompaction.isPresent()) {
+                options.add(new StringBuilder("'enabled'").append(VALUE_SEPARATOR).append(enableBackgroundCompaction.get()).toString());
             }
 
             if (tombstoneCompactionIntervalInDay.isPresent()) {
@@ -659,6 +652,10 @@ public abstract class TableOptions<T extends TableOptions> {
 
             if (tombstoneThreshold.isPresent()) {
                 options.add(new StringBuilder("'tombstone_threshold'").append(VALUE_SEPARATOR).append(tombstoneThreshold.get()).toString());
+            }
+
+            if (uncheckedTombstoneCompaction.isPresent()) {
+                options.add(new StringBuilder("'unchecked_tombstone_compaction'").append(VALUE_SEPARATOR).append(uncheckedTombstoneCompaction.get()).toString());
             }
 
             return options;
@@ -670,6 +667,18 @@ public abstract class TableOptions<T extends TableOptions> {
          * Compaction options specific to SizeTiered strategy
          */
         public static class SizeTieredCompactionStrategyOptions extends CompactionOptions<SizeTieredCompactionStrategyOptions> {
+
+            private Optional<Double> bucketHigh = Optional.absent();
+
+            private Optional<Double> bucketLow = Optional.absent();
+
+            private Optional<Double> coldReadsRatioToOmit = Optional.absent();
+
+            private Optional<Integer> minThreshold = Optional.absent();
+
+            private Optional<Integer> maxThreshold = Optional.absent();
+
+            private Optional<Long> minSSTableSizeInBytes = Optional.absent();
 
             private SizeTieredCompactionStrategyOptions() {
                 super(Strategy.SIZED_TIERED);
@@ -685,7 +694,7 @@ public abstract class TableOptions<T extends TableOptions> {
              * @return
              */
             public SizeTieredCompactionStrategyOptions bucketHigh(Double bucketHigh) {
-                super.bucketHigh = Optional.fromNullable(bucketHigh);
+                this.bucketHigh = Optional.fromNullable(bucketHigh);
                 return this;
             }
 
@@ -699,7 +708,7 @@ public abstract class TableOptions<T extends TableOptions> {
              * @return
              */
             public SizeTieredCompactionStrategyOptions bucketLow(Double bucketLow) {
-                super.bucketLow = Optional.fromNullable(bucketLow);
+                this.bucketLow = Optional.fromNullable(bucketLow);
                 return this;
             }
 
@@ -717,12 +726,12 @@ public abstract class TableOptions<T extends TableOptions> {
              */
             public SizeTieredCompactionStrategyOptions coldReadsRatioToOmit(Double coldReadsRatio) {
                 validateRateValue(coldReadsRatio, "Cold read ratio to omit ");
-                super.coldReadsRatioToOmit = Optional.fromNullable(coldReadsRatio);
+                this.coldReadsRatioToOmit = Optional.fromNullable(coldReadsRatio);
                 return this;
             }
 
             /**
-             * In SizeTieredCompactionStrategy sets the minimum number of SSTables to trigger a minor compaction
+             * Sets the minimum number of SSTables to trigger a minor compaction
              * <p>
              *     If not set, default = 4
              * </p>
@@ -730,7 +739,21 @@ public abstract class TableOptions<T extends TableOptions> {
              * @return
              */
             public SizeTieredCompactionStrategyOptions minThreshold(Integer minThreshold) {
-                super.minThreshold = Optional.fromNullable(minThreshold);
+                this.minThreshold = Optional.fromNullable(minThreshold);
+                return this;
+            }
+
+            /**
+             * Sets the maximum number of SSTables to allow in a minor compaction.
+             * In LeveledCompactionStrategy (LCS), it applies to L0 when L0 gets behind, that is, when L0 accumulates more than MAX_COMPACTING_L0 SSTables.
+             * <p>
+             *     If not set, default = 32
+             * </p>
+             * @param maxThreshold max threshold
+             * @return this compaction options
+             */
+            public SizeTieredCompactionStrategyOptions maxThreshold(Integer maxThreshold) {
+                this.maxThreshold = Optional.fromNullable(maxThreshold);
                 return this;
             }
 
@@ -745,7 +768,7 @@ public abstract class TableOptions<T extends TableOptions> {
              * @return
              */
             public SizeTieredCompactionStrategyOptions minSSTableSizeInBytes(Long minSSTableSize) {
-                super.minSSTableSizeInBytes = Optional.fromNullable(minSSTableSize);
+                this.minSSTableSizeInBytes = Optional.fromNullable(minSSTableSize);
                 return this;
             }
 
@@ -755,24 +778,28 @@ public abstract class TableOptions<T extends TableOptions> {
 
                 List<String> options = new ArrayList<String>(generalOptions);
 
-                if (super.bucketHigh.isPresent()) {
-                    options.add(new StringBuilder("'bucket_high'").append(VALUE_SEPARATOR).append(super.bucketHigh.get()).toString());
+                if (bucketHigh.isPresent()) {
+                    options.add(new StringBuilder("'bucket_high'").append(VALUE_SEPARATOR).append(bucketHigh.get()).toString());
                 }
 
-                if (super.bucketLow.isPresent()) {
-                    options.add(new StringBuilder("'bucket_low'").append(VALUE_SEPARATOR).append(super.bucketLow.get()).toString());
+                if (bucketLow.isPresent()) {
+                    options.add(new StringBuilder("'bucket_low'").append(VALUE_SEPARATOR).append(bucketLow.get()).toString());
                 }
 
-                if (super.coldReadsRatioToOmit.isPresent()) {
-                    options.add(new StringBuilder("'cold_reads_to_omit'").append(VALUE_SEPARATOR).append(super.coldReadsRatioToOmit.get()).toString());
+                if (coldReadsRatioToOmit.isPresent()) {
+                    options.add(new StringBuilder("'cold_reads_to_omit'").append(VALUE_SEPARATOR).append(coldReadsRatioToOmit.get()).toString());
                 }
 
-                if (super.minThreshold.isPresent()) {
-                    options.add(new StringBuilder("'min_threshold'").append(VALUE_SEPARATOR).append(super.minThreshold.get()).toString());
+                if (minThreshold.isPresent()) {
+                    options.add(new StringBuilder("'min_threshold'").append(VALUE_SEPARATOR).append(minThreshold.get()).toString());
                 }
 
-                if (super.minSSTableSizeInBytes.isPresent()) {
-                    options.add(new StringBuilder("'min_sstable_size'").append(VALUE_SEPARATOR).append(super.minSSTableSizeInBytes.get()).toString());
+                if (maxThreshold.isPresent()) {
+                    options.add(new StringBuilder("'max_threshold'").append(VALUE_SEPARATOR).append(maxThreshold.get()).toString());
+                }
+
+                if (minSSTableSizeInBytes.isPresent()) {
+                    options.add(new StringBuilder("'min_sstable_size'").append(VALUE_SEPARATOR).append(minSSTableSizeInBytes.get()).toString());
                 }
                 return new StringBuilder(START_SUB_OPTIONS).append(Joiner.on(SUB_OPTION_SEPARATOR).join(options)).append(END_SUB_OPTIONS).toString();
             }
@@ -782,6 +809,8 @@ public abstract class TableOptions<T extends TableOptions> {
          * Compaction options specific to Leveled strategy
          */
         public static class LeveledCompactionStrategyOptions extends CompactionOptions<LeveledCompactionStrategyOptions> {
+
+            private Optional<Integer> ssTableSizeInMB = Optional.absent();
 
             private LeveledCompactionStrategyOptions() {
                 super(Strategy.LEVELED);
@@ -798,7 +827,7 @@ public abstract class TableOptions<T extends TableOptions> {
              * @return
              */
             public LeveledCompactionStrategyOptions ssTableSizeInMB(Integer ssTableSizeInMB) {
-                super.ssTableSizeInMB = Optional.fromNullable(ssTableSizeInMB);
+                this.ssTableSizeInMB = Optional.fromNullable(ssTableSizeInMB);
                 return this;
             }
 
@@ -808,8 +837,8 @@ public abstract class TableOptions<T extends TableOptions> {
 
                 List<String> options = new ArrayList<String>(generalOptions);
 
-                if (super.ssTableSizeInMB.isPresent()) {
-                    options.add(new StringBuilder("'sstable_size_in_mb'").append(VALUE_SEPARATOR).append(super.ssTableSizeInMB.get()).toString());
+                if (ssTableSizeInMB.isPresent()) {
+                    options.add(new StringBuilder("'sstable_size_in_mb'").append(VALUE_SEPARATOR).append(ssTableSizeInMB.get()).toString());
                 }
                 return new StringBuilder(START_SUB_OPTIONS).append(Joiner.on(SUB_OPTION_SEPARATOR).join(options)).append(END_SUB_OPTIONS).toString();
             }
@@ -817,10 +846,144 @@ public abstract class TableOptions<T extends TableOptions> {
         }
 
         /**
-         * Compaction strategies. Possible values: SIZED_TIERED & LEVELED
+         * Compaction options specific to the date-tiered strategy.
+         */
+        public static class DateTieredCompactionStrategyOptions extends CompactionOptions<DateTieredCompactionStrategyOptions> {
+
+            enum TimeStampResolution { MICROSECONDS, MILLISECONDS }
+
+            private Optional<Integer> baseTimeSeconds;
+
+            private Optional<Integer> maxSSTableAgeDays;
+
+            private Optional<Integer> minThreshold = Optional.absent();
+
+            private Optional<Integer> maxThreshold = Optional.absent();
+
+            private Optional<Long> minSSTableSizeInBytes = Optional.absent();
+
+            private Optional<TimeStampResolution> timestampResolution = Optional.absent();
+
+            private DateTieredCompactionStrategyOptions() {
+                super(Strategy.DATE_TIERED);
+            }
+
+            /**
+             * Sets the size of the first window.
+             * <p>
+             * If not set, default = 3600 (1 hour).
+             *
+             * @param baseTimeSeconds the size of the first window.
+             * @return these compaction options.
+             */
+            public DateTieredCompactionStrategyOptions baseTimeSeconds(Integer baseTimeSeconds) {
+                this.baseTimeSeconds = Optional.fromNullable(baseTimeSeconds);
+                return this;
+            }
+
+            /**
+             * Stop compacting SSTables only having data older than these specified days.
+             * <p>
+             * If not set, default = 365.
+             *
+             * @param maxSSTableAgeDays the maximum age of the SSTables to compact.
+             * @return these compaction options.
+             */
+            public DateTieredCompactionStrategyOptions maxSSTableAgeDays(Integer maxSSTableAgeDays) {
+                this.maxSSTableAgeDays = Optional.fromNullable(maxSSTableAgeDays);
+                return this;
+            }
+
+            /**
+             * Sets the minimum number of SSTables to trigger a minor compaction
+             * <p>
+             *     If not set, default = 4
+             * </p>
+             * @param minThreshold min threshold
+             * @return these compaction options.
+             */
+            public DateTieredCompactionStrategyOptions minThreshold(Integer minThreshold) {
+                this.minThreshold = Optional.fromNullable(minThreshold);
+                return this;
+            }
+
+            /**
+             * Sets the maximum number of SSTables to allow in a minor compaction.
+             * In LeveledCompactionStrategy (LCS), it applies to L0 when L0 gets behind, that is, when L0 accumulates more than MAX_COMPACTING_L0 SSTables.
+             * <p>
+             *     If not set, default = 32
+             * </p>
+             * @param maxThreshold max threshold
+             * @return these compaction options.
+             */
+            public DateTieredCompactionStrategyOptions maxThreshold(Integer maxThreshold) {
+                this.maxThreshold = Optional.fromNullable(maxThreshold);
+                return this;
+            }
+
+            /**
+             * If your SSTables are small, use min_sstable_size to define a size threshold (in bytes) below which all SSTables belong to one unique bucket.
+             * <p>
+             *     If not set, default = 52428800 (50Mb)
+             * </p>
+             * @param minSSTableSize min SSTable size in bytes
+             * @return these compaction options.
+             */
+            public DateTieredCompactionStrategyOptions minSSTableSizeInBytes(Long minSSTableSize) {
+                this.minSSTableSizeInBytes = Optional.fromNullable(minSSTableSize);
+                return this;
+            }
+
+            /**
+             * Sets the timestamp resolution, depending on the timestamp unit of the data you insert.
+             *
+             * @param timestampResolution {@link TimeStampResolution#MICROSECONDS} or {@link TimeStampResolution#MILLISECONDS}.
+             * @return these compaction options.
+             */
+            public DateTieredCompactionStrategyOptions timestampResolution(TimeStampResolution timestampResolution) {
+                this.timestampResolution = Optional.fromNullable(timestampResolution);
+                return this;
+            }
+
+
+            @Override public String build() {
+                final List<String> generalOptions = super.buildCommonOptions();
+
+                List<String> options = new ArrayList<String>(generalOptions);
+
+                if (baseTimeSeconds.isPresent()) {
+                    options.add(new StringBuilder("'base_time_seconds'").append(VALUE_SEPARATOR).append(baseTimeSeconds.get()).toString());
+                }
+
+                if (maxSSTableAgeDays.isPresent()) {
+                    options.add(new StringBuilder("'max_sstable_age_days'").append(VALUE_SEPARATOR).append(maxSSTableAgeDays.get()).toString());
+                }
+
+                if (minThreshold.isPresent()) {
+                    options.add(new StringBuilder("'min_threshold'").append(VALUE_SEPARATOR).append(minThreshold.get()).toString());
+                }
+
+                if (maxThreshold.isPresent()) {
+                    options.add(new StringBuilder("'max_threshold'").append(VALUE_SEPARATOR).append(maxThreshold.get()).toString());
+                }
+
+                if (minSSTableSizeInBytes.isPresent()) {
+                    options.add(new StringBuilder("'min_sstable_size'").append(VALUE_SEPARATOR).append(minSSTableSizeInBytes.get()).toString());
+                }
+
+                if (timestampResolution.isPresent()) {
+                    options.add(new StringBuilder("'timestamp_resolution'").append(VALUE_SEPARATOR).append("'").append(timestampResolution.get()).append("'").toString());
+                }
+
+                return new StringBuilder(START_SUB_OPTIONS).append(Joiner.on(SUB_OPTION_SEPARATOR).join(options)).append(END_SUB_OPTIONS).toString();
+            }
+        }
+
+        /**
+         * Compaction strategies. Possible values: SIZED_TIERED, LEVELED & DATE_TIERED
          */
         public static enum Strategy {
-            SIZED_TIERED("'SizeTieredCompactionStrategy'"), LEVELED("'LeveledCompactionStrategy'");
+            SIZED_TIERED("'SizeTieredCompactionStrategy'"), LEVELED("'LeveledCompactionStrategy'"), DATE_TIERED("'DateTieredCompactionStrategy'");
 
             private String strategyClass;
 
