@@ -24,7 +24,7 @@ import java.util.Map;
 public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<T>> extends SchemaStatement {
 
     protected Optional<String> keyspaceName = Optional.absent();
-    protected Optional<Boolean> ifNotExists = Optional.absent();
+    protected boolean ifNotExists;
     protected Map<String, ColumnType> simpleColumns = new LinkedHashMap<String, ColumnType>();
 
     protected abstract T getThis();
@@ -32,11 +32,10 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
     /**
      * Use 'IF NOT EXISTS' CAS condition for the creation.
      *
-     * @param ifNotExists whether to use the CAS condition.
      * @return this CREATE statement.
      */
-    public T ifNotExists(Boolean ifNotExists) {
-        this.ifNotExists = Optional.fromNullable(ifNotExists);
+    public T ifNotExists() {
+        this.ifNotExists = true;
         return getThis();
     }
 
@@ -150,7 +149,7 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
     public T addUDTMapColumn(String columnName, UDTType udtKeyType, DataType valueType) {
         validateNotEmpty(columnName, "Column name");
         validateNotNull(udtKeyType, "Map key UDT type");
-        validateNotNull(valueType, "Map valye type");
+        validateNotNull(valueType, "Map value type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
         simpleColumns.put(columnName, UDTType.mapWithUDTKey(udtKeyType, valueType));
         return getThis();

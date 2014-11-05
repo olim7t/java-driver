@@ -66,7 +66,7 @@ public class CreateTest {
     public void should_create_simple_table_if_not_exists() throws Exception {
         //When
         final String built = SchemaBuilder.createTable("test")
-                .ifNotExists(true)
+                .ifNotExists()
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .build();

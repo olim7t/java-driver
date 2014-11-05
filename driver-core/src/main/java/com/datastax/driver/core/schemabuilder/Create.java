@@ -331,7 +331,7 @@ public class Create extends AbstractCreateStatement<Create> {
         validateColumnsDeclaration();
 
         StringBuilder createStatement = new StringBuilder(NEW_LINE).append(TAB).append(CREATE_TABLE);
-        if (ifNotExists.isPresent() && ifNotExists.get()) {
+        if (ifNotExists) {
             createStatement.append(SPACE).append(IF_NOT_EXISTS);
         }
         createStatement.append(SPACE);

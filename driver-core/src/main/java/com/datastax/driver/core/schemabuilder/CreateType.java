@@ -63,7 +63,7 @@ public class CreateType extends AbstractCreateStatement<CreateType> {
     String buildInternal() {
 
         StringBuilder createStatement = new StringBuilder(NEW_LINE).append(TAB).append(CREATE_TYPE);
-        if (ifNotExists.isPresent() && ifNotExists.get()) {
+        if (ifNotExists) {
             createStatement.append(SPACE).append(IF_NOT_EXISTS);
         }
         createStatement.append(SPACE);

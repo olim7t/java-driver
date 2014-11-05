@@ -15,12 +15,11 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.UserType;
-import org.mockito.Mockito;
 import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.datastax.driver.core.DataType;
 
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.udtLiteral;
@@ -45,7 +44,7 @@ public class CreateTypeTest {
     public void should_create_UDT_if_not_exists() throws Exception {
         //When
         final String built = SchemaBuilder.createType("myType")
-                .ifNotExists(true)
+                .ifNotExists()
                 .addColumn("col1", DataType.text())
                 .addColumn("col2", DataType.bigint())
                 .build();
