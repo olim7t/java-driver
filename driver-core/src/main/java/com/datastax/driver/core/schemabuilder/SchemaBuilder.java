@@ -124,12 +124,13 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Shortcut for new Create.Options.ClusteringOrder(clusteringColumnName, clusteringOrder)
-     * @param clusteringColumnName the clustering column name
-     * @param clusteringOrder the clustering order (DESC/ASC)
-     * @return
+     * Defines a clustering order for a CREATE TABLE statement.
+     *
+     * @param clusteringColumnName the clustering column name.
+     * @param clusteringOrder the clustering order (DESC/ASC).
+     * @return the clustering order.
      */
-    public static Create.Options.ClusteringOrder clusteringOrder(String clusteringColumnName, Create.Options.ClusteringOrder.Sorting clusteringOrder) {
+    public static Create.Options.ClusteringOrder clusteringOrder(String clusteringColumnName, Sorting clusteringOrder) {
         return new Create.Options.ClusteringOrder(clusteringColumnName, clusteringOrder);
     }
 
@@ -199,5 +200,163 @@ public final class SchemaBuilder {
      */
     public static UDTType udtLiteral(String literal) {
         return UDTType.literal(literal);
+    }
+
+    /**
+     * Creates options for the size-tiered compaction strategy, for use in a CREATE or ALTER TABLE statement.
+     * @return the options.
+     */
+    public static TableOptions.CompactionOptions.SizeTieredCompactionStrategyOptions sizedTieredStategy() {
+        return new TableOptions.CompactionOptions.SizeTieredCompactionStrategyOptions();
+    }
+
+    /**
+     * Creates options for the leveled compaction strategy, to use in a CREATE or ALTER TABLE statement.
+     * @return the options.
+     */
+    public static TableOptions.CompactionOptions.LeveledCompactionStrategyOptions leveledStrategy() {
+        return new TableOptions.CompactionOptions.LeveledCompactionStrategyOptions();
+    }
+
+    /**
+     * Creates options for the date-tiered compaction strategy, to use in a CREATE or ALTER TABLE statement.
+     * <p>
+     * This strategy was introduced in Cassandra 2.1.1.
+     *
+     * @return the options.
+     */
+    public static TableOptions.CompactionOptions.DateTieredCompactionStrategyOptions dateTieredStrategy() {
+        return new TableOptions.CompactionOptions.DateTieredCompactionStrategyOptions();
+    }
+
+    /**
+     * Creates options for the no compression strategy, to use in a CREATE or ALTER TABLE statement.
+     *
+     * @return the options.
+     */
+    public static TableOptions.CompressionOptions noCompression() {
+        return new TableOptions.CompressionOptions.NoCompression();
+    }
+
+    /**
+     * Creates options for the LZ4 compression strategy, to use in a CREATE or ALTER TABLE statement.
+     * @return the options.
+     */
+    public static TableOptions.CompressionOptions lz4() {
+        return new TableOptions.CompressionOptions(TableOptions.CompressionOptions.Algorithm.LZ4);
+    }
+
+    /**
+     * Creates options for the Snappy compression strategy, to use in a CREATE or ALTER TABLE statement.
+     * @return the options.
+     */
+    public static TableOptions.CompressionOptions snappy() {
+        return new TableOptions.CompressionOptions(TableOptions.CompressionOptions.Algorithm.SNAPPY);
+    }
+
+    /**
+     * Creates options for the Deflate compression strategy, to use in a CREATE or ALTER TABLE statement.
+     * @return the options.
+     */
+    public static TableOptions.CompressionOptions deflate() {
+        return new TableOptions.CompressionOptions(TableOptions.CompressionOptions.Algorithm.DEFLATE);
+    }
+
+    /**
+     * Creates the speculative retry strategy that never retries reads, to use in a CREATE or ALTER TABLE statement.
+     * @return the strategy.
+     */
+    public static TableOptions.SpeculativeRetryValue noSpeculativeRetry() {
+        return new TableOptions.SpeculativeRetryValue("'NONE'");
+    }
+
+    /**
+     * Creates the speculative retry strategy that retries reads of all replicas, to use in a CREATE or ALTER TABLE statement.
+     * @return the strategy.
+     */
+    public static TableOptions.SpeculativeRetryValue always() {
+        return new TableOptions.SpeculativeRetryValue("'ALWAYS'");
+    }
+
+    /**
+     * Creates the speculative retry strategy that retries based on the effect on throughput and latency,
+     * to use in a CREATE or ALTER TABLE statement.
+     * @return the strategy.
+     */
+    public static TableOptions.SpeculativeRetryValue percentile(int percentile) {
+        if (percentile < 0 || percentile > 100) {
+            throw new IllegalArgumentException("Percentile value for speculative retry should be between 0 and 100");
+        }
+        return new TableOptions.SpeculativeRetryValue("'" + percentile + "percentile'");
+    }
+
+    /**
+     * Creates the speculative retry strategy that retries after a given delay, to use in a CREATE or ALTER TABLE statement.
+     * @return the strategy.
+     */
+    public static TableOptions.SpeculativeRetryValue millisecs(int millisecs) {
+        if (millisecs < 0) {
+            throw new IllegalArgumentException("Millisecond value for speculative retry should be positive");
+        }
+        return new TableOptions.SpeculativeRetryValue("'" + millisecs + "ms'");
+    }
+
+    /**
+     * The sorting used in {@link #clusteringOrder(String, com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting)} declarations.
+     */
+    public static enum Sorting {
+        ASC, DESC
+    }
+
+    /**
+     * Defines caching strategies, for use in a CREATE or ALTER TABLE statement.
+     */
+    public static enum Caching {
+        ALL("'all'"), KEYS_ONLY("'keys_only'"), ROWS_ONLY("'rows_only'"), NONE("'none'");
+
+        private String value;
+
+        Caching(String value) {
+            this.value = value;
+        }
+
+        String value() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+    }
+
+    /**
+     * Returns the row caching strategy that never caches rows, to use in a CREATE or ALTER TABLE statement.
+     * @return the strategy.
+     */
+    public static TableOptions.CachingRowsPerPartition noRows() {
+        return new TableOptions.CachingRowsPerPartition("NONE");
+    }
+
+    /**
+     * Returns the row caching strategy that caches all rows, to use in a CREATE or ALTER TABLE statement.
+     * <p>
+     * <strong>Be careful when choosing this option, you can starve Cassandra memory quickly if your partition is very large.</strong>
+     * @return the strategy.
+     */
+    public static TableOptions.CachingRowsPerPartition allRows() {
+        return new TableOptions.CachingRowsPerPartition("ALL");
+    }
+
+    /**
+     * Returns the row caching strategy that caches a given number of rows, to use in a CREATE or ALTER TABLE statement.
+     * @param rowNumber the number of rows to cache.
+     * @return the strategy.
+     */
+    public static TableOptions.CachingRowsPerPartition rows(int rowNumber) {
+        if (rowNumber <= 0) {
+            throw new IllegalArgumentException("rows number for caching should be strictly positive");
+        }
+        return new TableOptions.CachingRowsPerPartition(Integer.toString(rowNumber));
     }
 }

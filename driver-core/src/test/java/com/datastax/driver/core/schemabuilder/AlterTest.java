@@ -16,9 +16,9 @@
 package com.datastax.driver.core.schemabuilder;
 
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
-import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.NONE;
-import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.ROWS_ONLY;
-import static com.datastax.driver.core.schemabuilder.TableOptions.CachingRowsPerPartition.rows;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Caching.NONE;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Caching.ROWS_ONLY;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.rows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -100,8 +100,8 @@ public class AlterTest {
                 .bloomFilterFPChance(0.01)
                 .caching(ROWS_ONLY)
                 .comment("This is a comment")
-                .compactionOptions(TableOptions.CompactionOptions.leveledStrategy().ssTableSizeInMB(160))
-                .compressionOptions(TableOptions.CompressionOptions.lz4())
+                .compactionOptions(SchemaBuilder.leveledStrategy().ssTableSizeInMB(160))
+                .compressionOptions(SchemaBuilder.lz4())
                 .dcLocalReadRepairChance(0.21)
                 .defaultTimeToLive(100)
                 .gcGraceSeconds(9999L)
@@ -112,7 +112,7 @@ public class AlterTest {
                 .populateIOCacheOnFlush(true)
                 .replicateOnWrite(true)
                 .readRepairChance(0.42)
-                .speculativeRetry(TableOptions.SpeculativeRetryValue.always())
+                .speculativeRetry(SchemaBuilder.always())
                 .build();
 
         final String builtWith21Caching = SchemaBuilder.alterTable("test").withOptions()

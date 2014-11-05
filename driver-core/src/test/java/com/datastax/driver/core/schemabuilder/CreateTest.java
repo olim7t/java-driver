@@ -15,10 +15,10 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
-import static com.datastax.driver.core.schemabuilder.Create.Options.ClusteringOrder.Sorting.ASC;
-import static com.datastax.driver.core.schemabuilder.Create.Options.ClusteringOrder.Sorting.DESC;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting.ASC;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting.DESC;
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
-import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.ROWS_ONLY;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Caching.ROWS_ONLY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.driver.core.DataType;
@@ -328,8 +328,8 @@ public class CreateTest {
                 .bloomFilterFPChance(0.01)
                 .caching(ROWS_ONLY)
                 .comment("This is a comment")
-                .compactionOptions(TableOptions.CompactionOptions.leveledStrategy().ssTableSizeInMB(160))
-                .compressionOptions(TableOptions.CompressionOptions.lz4())
+                .compactionOptions(SchemaBuilder.leveledStrategy().ssTableSizeInMB(160))
+                .compressionOptions(SchemaBuilder.lz4())
                 .dcLocalReadRepairChance(0.21)
                 .defaultTimeToLive(100)
                 .gcGraceSeconds(9999L)
@@ -339,7 +339,7 @@ public class CreateTest {
                 .populateIOCacheOnFlush(true)
                 .readRepairChance(0.05)
                 .replicateOnWrite(true)
-                .speculativeRetry(TableOptions.SpeculativeRetryValue.always())
+                .speculativeRetry(SchemaBuilder.always())
                 .build();
 
         //Then
@@ -372,7 +372,7 @@ public class CreateTest {
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .caching(TableOptions.Caching.ALL, TableOptions.CachingRowsPerPartition.rows(100))
+                .caching(SchemaBuilder.Caching.ALL, SchemaBuilder.rows(100))
                 .build();
 
         //Then
@@ -407,7 +407,7 @@ public class CreateTest {
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .caching(TableOptions.Caching.KEYS_ONLY, TableOptions.CachingRowsPerPartition.all())
+                .caching(SchemaBuilder.Caching.KEYS_ONLY, SchemaBuilder.allRows())
                 .build();
     }
 
@@ -417,7 +417,7 @@ public class CreateTest {
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .caching(TableOptions.Caching.ALL, TableOptions.CachingRowsPerPartition.rows(-3))
+                .caching(SchemaBuilder.Caching.ALL, SchemaBuilder.rows(-3))
                 .build();
     }
 
@@ -448,7 +448,7 @@ public class CreateTest {
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .speculativeRetry(TableOptions.SpeculativeRetryValue.none())
+                .speculativeRetry(SchemaBuilder.noSpeculativeRetry())
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -465,7 +465,7 @@ public class CreateTest {
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .speculativeRetry(TableOptions.SpeculativeRetryValue.percentile(95))
+                .speculativeRetry(SchemaBuilder.percentile(95))
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -482,7 +482,7 @@ public class CreateTest {
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .speculativeRetry(TableOptions.SpeculativeRetryValue.millisecs(12))
+                .speculativeRetry(SchemaBuilder.millisecs(12))
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +

@@ -49,7 +49,7 @@ public abstract class TableOptions<T extends TableOptions> {
 
     private SchemaStatement schemaStatement;
 
-    private Optional<Caching> caching = Optional.absent();
+    private Optional<SchemaBuilder.Caching> caching = Optional.absent();
     private Optional<CachingRowsPerPartition> cachingRowsPerPartition = Optional.absent();
 
     private Optional<Double> bloomFilterFPChance = Optional.absent();
@@ -94,7 +94,7 @@ public abstract class TableOptions<T extends TableOptions> {
      * @param caching caching type. Available values are NONE, ALL, KEYS_ONLY & ROWS_ONLY
      * @return this table options
      */
-    public T caching(Caching caching) {
+    public T caching(SchemaBuilder.Caching caching) {
         this.caching = Optional.fromNullable(caching);
         return (T) this;
     }
@@ -104,17 +104,16 @@ public abstract class TableOptions<T extends TableOptions> {
      * <p>
      *     Defaults:  keys = ALL, rows_per_partition = NONE
      * </p>
-     * @param keys the key cache type. Available values are NONE, ALL
+     * @param keys the key cache type
+     *             (allowed values: {@link SchemaBuilder.Caching#NONE} or {@link SchemaBuilder.Caching#ALL}).
      * @param rowsPerPartition defines the number of rows to be cached per partition when Row Caching is enabled.
-     *   <ul>
-     *       <li>NONE: Do not cache rows.</li>
-     *       <li>ALL: cache all rows for a given partition.<strong>Be careful when choosing this option, you can starve quickly Cassandra memory if your partition is very large</strong></li>
-     *       <li>int: define a number of rows to cache.</li>
-     *   </ul>
-     *   Use the static methods on {@link com.datastax.driver.core.schemabuilder.TableOptions.CachingRowsPerPartition} to build the option
+     *                         To create instances, use
+     *                         {@link SchemaBuilder#noRows()},
+     *                         {@link SchemaBuilder#allRows()} or
+     *                         {@link SchemaBuilder#rows(int)}.
      * @return this table options
      */
-    public T caching(Caching keys, CachingRowsPerPartition rowsPerPartition) {
+    public T caching(SchemaBuilder.Caching keys, CachingRowsPerPartition rowsPerPartition) {
         this.caching = Optional.fromNullable(keys);
         this.cachingRowsPerPartition = Optional.fromNullable(rowsPerPartition);
         return (T) this;
@@ -146,8 +145,11 @@ public abstract class TableOptions<T extends TableOptions> {
 
     /**
      * Define the compression options
-     * @param compressionOptions the compression options.
-     *        Use the {@link com.datastax.driver.core.schemabuilder.TableOptions.CompressionOptions} to build an instance of compression options
+     * @param compressionOptions the compression options. To create instances, use
+     *                           {@link SchemaBuilder#noCompression()},
+     *                           {@link SchemaBuilder#lz4()},
+     *                           {@link SchemaBuilder#snappy()} or
+     *                           {@link SchemaBuilder#deflate()}.
      * @return this table options
      */
     public T compressionOptions(CompressionOptions compressionOptions) {
@@ -157,8 +159,10 @@ public abstract class TableOptions<T extends TableOptions> {
 
     /**
      * Define the compaction options
-     * @param compactionOptions the compaction options.
-     *        Use the {@link TableOptions.CompactionOptions} to build an instance of compaction options
+     * @param compactionOptions the compaction options. To create instances, use
+     *                          {@link SchemaBuilder#sizedTieredStategy()},
+     *                          {@link SchemaBuilder#leveledStrategy()} or
+     *                          {@link SchemaBuilder#dateTieredStrategy()}
      * @return this table options
      */
     public T compactionOptions(CompactionOptions compactionOptions) {
@@ -350,15 +354,18 @@ public abstract class TableOptions<T extends TableOptions> {
      *     <li>NONE: Do not retry reads.</li>
      * </ul>
      *
-     * Using the speculative retry property, you can configure rapid read protection in Cassandra 2.0.2.
+     * Using the speculative retry property, you can configure rapid read protection in Cassandra 2.0.2 and later.
      * Use this property to retry a request after some milliseconds have passed or after a percentile of the typical read latency has been reached,
      * which is tracked per table.
      *
      * <p>
      *     If not set, default = 99percentile Cassandra 2.0.2 and later
      * </p>
-     * @param speculativeRetry the speculative retry.
-     *      Use {@link TableOptions.SpeculativeRetryValue} class to build an instance
+     * @param speculativeRetry the speculative retry. To create instances, use
+     *                         {@link SchemaBuilder#noSpeculativeRetry()},
+     *                         {@link SchemaBuilder#always()},
+     *                         {@link SchemaBuilder#percentile(int)} or
+     *                         {@link SchemaBuilder#millisecs(int)}.
      * @return this table options
      */
     public T speculativeRetry(SpeculativeRetryValue speculativeRetry) {
@@ -460,8 +467,8 @@ public abstract class TableOptions<T extends TableOptions> {
     private void buildCachingOptions(List<String> options) {
         if (caching.isPresent()) {
             if (cachingRowsPerPartition.isPresent()) {
-                final Caching cachingType = caching.get();
-                if ((cachingType == Caching.ALL || cachingType == Caching.NONE)) {
+                final SchemaBuilder.Caching cachingType = caching.get();
+                if ((cachingType == SchemaBuilder.Caching.ALL || cachingType == SchemaBuilder.Caching.NONE)) {
                     options.add(new StringBuilder("caching")
                             .append(OPTION_ASSIGNMENT)
                             .append(START_SUB_OPTIONS)
@@ -496,45 +503,12 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Define table caching.
+     * Compaction options for a CREATE or ALTER TABLE statement.
      * <p>
-     *     Possible values are NONE, ALL, KEYS_ONLY & ROWS_ONLY
-     * </p>
-     *
-     */
-    public static enum Caching {
-        ALL("'all'"), KEYS_ONLY("'keys_only'"), ROWS_ONLY("'rows_only'"), NONE("'none'");
-
-        private String value;
-
-        Caching(String value) {
-            this.value = value;
-        }
-
-        public String value() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
-    }
-
-    /**
-     * Compaction options
-     * <p>
-     *      This is an abstract class. Concrete classes are {@link TableOptions.CompactionOptions.SizeTieredCompactionStrategyOptions}
-     *      and {@link TableOptions.CompactionOptions.LeveledCompactionStrategyOptions}
-     * </p>
-     * <p>
-     *      The parameter type &lt;T&gt; allows the usage of <strong>covariant return type</strong> to make the builder work
-     * </p>
-     * <p>
-     *     @see <a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/compactSubprop.html" target="_blank">details on sub-properties of compaction</a>
-     * </p>
-     * </p>
-     * @param <T> the type of the sub-class
+     * To create instances, use
+     * {@link SchemaBuilder#sizedTieredStategy()},
+     * {@link SchemaBuilder#leveledStrategy()} or
+     * {@link SchemaBuilder#dateTieredStrategy()}
      */
     public static abstract class CompactionOptions<T extends CompactionOptions> {
 
@@ -551,29 +525,9 @@ public abstract class TableOptions<T extends TableOptions> {
         private T self;
 
         @SuppressWarnings("unchecked")
-        private CompactionOptions(Strategy compactionStrategy) {
+        CompactionOptions(Strategy compactionStrategy) {
             this.strategy = compactionStrategy;
             self = (T)this;
-        }
-
-        /**
-         * Compaction options for SizeTiered strategy
-         * @return a {@link TableOptions.CompactionOptions.SizeTieredCompactionStrategyOptions} instance
-         */
-        public static SizeTieredCompactionStrategyOptions sizedTieredStategy() {
-            return new SizeTieredCompactionStrategyOptions();
-        }
-
-        /**
-         * Compaction options for Leveled strategy
-         * @return a {@link TableOptions.CompactionOptions.LeveledCompactionStrategyOptions} instance
-         */
-        public static LeveledCompactionStrategyOptions leveledStrategy() {
-            return new LeveledCompactionStrategyOptions();
-        }
-
-        public static DateTieredCompactionStrategyOptions dateTieredStrategy() {
-            return new DateTieredCompactionStrategyOptions();
         }
 
         /**
@@ -678,7 +632,7 @@ public abstract class TableOptions<T extends TableOptions> {
 
             private Optional<Long> minSSTableSizeInBytes = Optional.absent();
 
-            private SizeTieredCompactionStrategyOptions() {
+            SizeTieredCompactionStrategyOptions() {
                 super(Strategy.SIZED_TIERED);
             }
 
@@ -810,7 +764,7 @@ public abstract class TableOptions<T extends TableOptions> {
 
             private Optional<Integer> ssTableSizeInMB = Optional.absent();
 
-            private LeveledCompactionStrategyOptions() {
+            LeveledCompactionStrategyOptions() {
                 super(Strategy.LEVELED);
             }
 
@@ -862,7 +816,7 @@ public abstract class TableOptions<T extends TableOptions> {
 
             private Optional<TimeStampResolution> timestampResolution = Optional.absent();
 
-            private DateTieredCompactionStrategyOptions() {
+            DateTieredCompactionStrategyOptions() {
                 super(Strategy.DATE_TIERED);
             }
 
@@ -1002,7 +956,13 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Compression options
+     * The compression options for a CREATE or ALTER TABLE statement.
+     * <p>
+     * To create instances, use
+     * {@link SchemaBuilder#noCompression()},
+     * {@link SchemaBuilder#lz4()},
+     * {@link SchemaBuilder#snappy()} or
+     * {@link SchemaBuilder#deflate()}.
      */
     public static class CompressionOptions {
 
@@ -1013,40 +973,8 @@ public abstract class TableOptions<T extends TableOptions> {
         private Optional<Double> crcCheckChance = Optional.absent();
 
 
-        public CompressionOptions(Algorithm algorithm) {
+        CompressionOptions(Algorithm algorithm) {
             this.algorithm = algorithm;
-        }
-
-        /**
-         * No compression
-         * @return compression options
-         */
-        public static CompressionOptions none() {
-            return new NoCompression();
-        }
-
-        /**
-         * LZ4 compression
-         * @return compression options
-         */
-        public static CompressionOptions lz4() {
-            return new CompressionOptions(Algorithm.LZ4);
-        }
-
-        /**
-         * Snappy compression
-         * @return compression options
-         */
-        public static CompressionOptions snappy() {
-            return new CompressionOptions(Algorithm.SNAPPY);
-        }
-
-        /**
-         * Deflate compression
-         * @return compression options
-         */
-        public static CompressionOptions deflate() {
-            return new CompressionOptions(Algorithm.DEFLATE);
         }
 
         /**
@@ -1135,121 +1063,45 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * To override normal read timeout when read_repair_chance is not 1.0, sending another request to read, choose one of these values and use the property to create
-     * or alter the table:
-     * <ul>
-     *     <li>ALWAYS: Retry reads of all replicas.</li>
-     *     <li>Xpercentile: Retry reads based on the effect on throughput and latency.</li>
-     *     <li>Yms: Retry reads after specified milliseconds.</li>
-     *     <li>NONE: Do not retry reads.</li>
-     * </ul>
-     *
-     * Using the speculative retry property, you can configure rapid read protection in Cassandra 2.0.2.
-     * Use this property to retry a request after some milliseconds have passed or after a percentile of the typical read latency has been reached,
-     * which is tracked per table.
-     *
+     * The speculative retry options.
      * <p>
-     *     If not set, default = 99percentile Cassandra 2.0.2 and later
-     * </p>
+     * To create instances, use
+     * {@link SchemaBuilder#noSpeculativeRetry()},
+     * {@link SchemaBuilder#always()},
+     * {@link SchemaBuilder#percentile(int)} or
+     * {@link SchemaBuilder#millisecs(int)}.
      */
     public static class SpeculativeRetryValue {
 
         private String value;
 
-        private SpeculativeRetryValue(String value) {
+        SpeculativeRetryValue(String value) {
             this.value = value;
         }
 
-        public String value() {
+        String value() {
             return value;
-        }
-
-        /**
-         * Deactivate speculative retry
-         * @return speculative retry value
-         */
-        public static SpeculativeRetryValue none() {
-            return new SpeculativeRetryValue("'NONE'");
-        }
-
-        /**
-         * Always use speculative retry
-         * @return speculative retry value
-         */
-        public static SpeculativeRetryValue always() {
-            return new SpeculativeRetryValue("'ALWAYS'");
-        }
-
-        /**
-         * Define a percentile for speculative retry. The percentile value should be between 0 and 100
-         * @return speculative retry value
-         */
-        public static SpeculativeRetryValue percentile(int percentile) {
-            if (percentile < 0 || percentile > 100) {
-                throw new IllegalArgumentException("Percentile value for speculative retry should be between 0 and 100");
-            }
-            return new SpeculativeRetryValue("'" + percentile + "percentile'");
-        }
-
-        /**
-         * Define a threshold in milli seconds for speculative retry
-         * @return speculative retry value
-         */
-        public static SpeculativeRetryValue millisecs(int millisecs) {
-            if (millisecs < 0) {
-                throw new IllegalArgumentException("Millisecond value for speculative retry should be positive");
-            }
-            return new SpeculativeRetryValue("'" + millisecs + "ms'");
         }
     }
 
     /**
-     * Define the number of rows to be cached per partition when Row Caching is enabled. This feature is only applicable to Cassandra 2.1.x
-     * <ul>
-     *     <li>NONE: Do not cache rows.</li>
-     *     <li>ALL: cache all rows for a given partition.<strong>Be careful when choosing this option, you can starve quickly Cassandra memory if your partition is very large</strong></li>
-     *     <li>int: define a number of rows to cache.</li>
-     * </ul>
-     *
+     * Define the number of rows to be cached per partition when row caching is enabled
+     * (this feature is only applicable to Cassandra 2.1.x).
+     * <p>
+     * To create instances, use
+     * {@link SchemaBuilder#noRows()},
+     * {@link SchemaBuilder#allRows()} or
+     * {@link SchemaBuilder#rows(int)}.
      */
     public static class CachingRowsPerPartition {
         private String value;
 
-        private CachingRowsPerPartition(String value) {
+        CachingRowsPerPartition(String value) {
             this.value = value;
         }
 
         public String value() {
             return value;
-        }
-
-        /**
-         * Do not cache rows
-         * @return CachingRowsPerPartition
-         */
-        public static CachingRowsPerPartition none() {
-            return new CachingRowsPerPartition("NONE");
-        }
-
-        /**
-         * Cache all rows. <br/>
-         * <strong>Be careful when choosing this option, you can starve quickly Cassandra memory if your partition is very large</strong>
-         * @return CachingRowsPerPartition
-         */
-        public static CachingRowsPerPartition all() {
-            return new CachingRowsPerPartition("ALL");
-        }
-
-        /**
-         * Cache the given amount of rows
-         * @param rowNumber number of rows to cache
-         * @return CachingRowsPerPartition
-         */
-        public static CachingRowsPerPartition rows(int rowNumber) {
-            if (rowNumber <= 0) {
-                throw new IllegalArgumentException("rows number for caching should be strictly positive");
-            }
-            return new CachingRowsPerPartition(new Integer(rowNumber).toString());
         }
     }
 

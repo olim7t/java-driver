@@ -25,7 +25,7 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_sized_tiered_compaction_options() throws Exception {
         //When
-        final String build = TableOptions.CompactionOptions
+        final String build = SchemaBuilder
                 .sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
@@ -56,7 +56,7 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_leveled_compaction_option() throws Exception {
         //When
-        final String build = TableOptions.CompactionOptions
+        final String build = SchemaBuilder
                 .leveledStrategy()
                 .enableBackgroundCompaction(true)
                 .ssTableSizeInMB(160)
@@ -77,7 +77,7 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_date_tiered_compaction_option() throws Exception {
         //When
-        String build = TableOptions.CompactionOptions
+        String build = SchemaBuilder
             .dateTieredStrategy()
             .baseTimeSeconds(7200)
             .enableBackgroundCompaction(true)
@@ -107,7 +107,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ratio_out_of_range() throws Exception {
-        TableOptions.CompactionOptions
+        SchemaBuilder
                 .sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
@@ -117,7 +117,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ratio_negative() throws Exception {
-        TableOptions.CompactionOptions
+        SchemaBuilder
                 .sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
@@ -127,7 +127,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_out_of_range() throws Exception {
-        TableOptions.CompactionOptions
+        SchemaBuilder
                 .sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
@@ -137,7 +137,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_negative() throws Exception {
-        TableOptions.CompactionOptions
+        SchemaBuilder
                 .sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)

@@ -30,6 +30,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting;
+
 /**
  * A built CREATE TABLE statement
  */
@@ -185,11 +187,10 @@ public class Create extends AbstractCreateStatement<Create> {
         private boolean compactStorage;
 
         /**
-         * Adds a {@link Create.Options.ClusteringOrder} for this table.
-         * <p>
-         * Please note that the {@link Create.Options.ClusteringOrder} are added in their declaration order
+         * Adds a clustering order for this table.
          *
-         * @param clusteringOrders the list of {@link Create.Options.ClusteringOrder}.
+         * @param clusteringOrders the columns defining the order (use {@link SchemaBuilder#clusteringOrder(String, Sorting)} to create instances).
+         *                         They will be added in their declaration order.
          * @return this {@code Options} object
          */
         public Options clusteringOrder(ClusteringOrder... clusteringOrders) {
@@ -229,7 +230,7 @@ public class Create extends AbstractCreateStatement<Create> {
              * Create a new clustering ordering with colummName/order
              *
              * @param clusteringColumnName the clustering column.
-             * @param sorting the {@link Create.Options.ClusteringOrder.Sorting}. Possible values are: ASC, DESC.
+             * @param sorting the {@link Sorting}. Possible values are: ASC, DESC.
              */
             public ClusteringOrder(String clusteringColumnName, Sorting sorting) {
                 validateNotEmpty(clusteringColumnName, "Column name for clustering order");
@@ -279,13 +280,6 @@ public class Create extends AbstractCreateStatement<Create> {
             @Override
             public int hashCode() {
                 return Objects.hashCode(clusteringColumnName, sorting);
-            }
-
-            /**
-             * The clustering sorting order
-             */
-            public static enum Sorting {
-                ASC, DESC
             }
         }
 
