@@ -17,12 +17,16 @@ package com.datastax.driver.core.schemabuilder;
 
 import static com.datastax.driver.core.schemabuilder.Create.Options.ClusteringOrder.Sorting.ASC;
 import static com.datastax.driver.core.schemabuilder.Create.Options.ClusteringOrder.Sorting.DESC;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
 import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.ROWS_ONLY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.driver.core.DataType;
 import org.testng.annotations.Test;
 
+/**
+ * Note: some addColumn variants are covered in {@link CreateTypeTest}.
+ */
 public class CreateTest {
 
     @Test(groups = "unit")
@@ -37,6 +41,20 @@ public class CreateTest {
                 "id bigint,\n\t\t" +
                 "name text,\n\t\t" +
                 "PRIMARY KEY(id))");
+    }
+
+    @Test(groups = "unit")
+    public void should_create_table_with_udt_partition_key() throws Exception {
+        //When
+        final String built = SchemaBuilder.createTable("test")
+            .addUDTPartitionKey("u", frozen("user"))
+            .build();
+
+        //Then
+        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+                "u frozen<user>,\n\t\t" +
+                "PRIMARY KEY(u))"
+        );
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class)
@@ -112,7 +130,7 @@ public class CreateTest {
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
                 "id bigint,\n\t\t" +
-                "friends map<int,text>,\n\t\t" +
+                "friends map<int, text>,\n\t\t" +
                 "PRIMARY KEY(id))");
     }
 
@@ -140,7 +158,7 @@ public class CreateTest {
         final String built = SchemaBuilder.createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
-                .addClusteringUDTKey("col2", "address")
+                .addUDTClusteringKey("col2", frozen("address"))
                 .addColumn("name", DataType.text())
                 .build();
         //Then
@@ -212,7 +230,7 @@ public class CreateTest {
         final String built = SchemaBuilder.createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col", DataType.uuid())
-                .addStaticUDTColumn("bucket", "address")
+                .addUDTStaticColumn("bucket", frozen("address"))
                 .addColumn("name", DataType.text())
                 .build();
         //Then

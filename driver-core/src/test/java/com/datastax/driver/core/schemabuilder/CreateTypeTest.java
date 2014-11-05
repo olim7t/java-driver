@@ -22,6 +22,9 @@ import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.udtLiteral;
+
 public class CreateTypeTest {
 
     @Test(groups = "unit")
@@ -58,7 +61,7 @@ public class CreateTypeTest {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
                 .addColumn("col1", DataType.text())
-                .addUDTColumn("my_udt", "address")
+                .addUDTColumn("my_udt", frozen("address"))
                 .build();
 
 
@@ -73,7 +76,7 @@ public class CreateTypeTest {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
                 .addColumn("col1", DataType.text())
-                .addUDTListColumn("my_udt", "address")
+                .addUDTListColumn("my_udt", frozen("address"))
                 .build();
 
 
@@ -88,7 +91,7 @@ public class CreateTypeTest {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
                 .addColumn("col1", DataType.text())
-                .addUDTSetColumn("my_udt", "address")
+                .addUDTSetColumn("my_udt", frozen("address"))
                 .build();
 
 
@@ -103,7 +106,7 @@ public class CreateTypeTest {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
                 .addColumn("col1", DataType.text())
-                .addUDTMapColumn("my_udt", "address", DataType.text())
+                .addUDTMapColumn("my_udt", frozen("address"), DataType.text())
                 .build();
 
 
@@ -118,7 +121,7 @@ public class CreateTypeTest {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
                 .addColumn("col1", DataType.text())
-                .addUDTMapColumn("my_udt", DataType.cint(),"address")
+                .addUDTMapColumn("my_udt", DataType.cint(), frozen("address"))
                 .build();
 
 
@@ -133,7 +136,7 @@ public class CreateTypeTest {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
                 .addColumn("col1", DataType.text())
-                .addUDTMapColumn("my_udt", "coords","address")
+                .addUDTMapColumn("my_udt", frozen("coords"), frozen("address"))
                 .build();
 
 
@@ -148,7 +151,7 @@ public class CreateTypeTest {
         //When
         final String built = SchemaBuilder.createType("ks", "myType")
                 .addColumn("col1", DataType.text())
-                .addColumn("my_udt", "frozen<address>")
+                .addUDTColumn("my_udt", udtLiteral("frozen<address>"))
                 .build();
 
 

@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
+import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
+
 /**
  * Static methods to build a CQL3 DML statement.
  * <p>
@@ -130,5 +132,31 @@ public final class SchemaBuilder {
      */
     public static CreateType createType(String keyspaceName, String typeName) {
         return new CreateType(keyspaceName, typeName);
+    }
+
+    /**
+     * Builds the datatype representation of a frozen UDT, to include in a schema builder statement.
+     * <p>
+     * <code>frozen("foo")</code> will produce <code>frozen&lt;foo&gt;</code>.
+     *
+     * @param udtName the name of the UDT.
+     * @return the type.
+     */
+    public static UDTType frozen(String udtName) {
+        return UDTType.frozen(udtName);
+    }
+
+    /**
+     * Builds the datatype representation of a complex UDT type, to include in a schema builder statement.
+     * <p>
+     * As of Cassandra 2.1, this method is not strictly necessary because {@link Create} and {@link Alter}
+     * provide specialized methods to express simple collections of UDTs, but future versions will make it
+     * possible to use types such as <code>map&lt;text, map&lt;text, frozen&lt;user&gt;&gt;&gt;</code>.
+     *
+     * @param literal the type literal as it will appear in the final CQL statement.
+     * @return the type
+     */
+    public static UDTType udtLiteral(String literal) {
+        return UDTType.literal(literal);
     }
 }

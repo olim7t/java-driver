@@ -19,7 +19,6 @@ import com.datastax.driver.core.DataType;
 import com.google.common.base.Optional;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<T>> extends SchemaStatement {
@@ -69,47 +68,7 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
         validateNotEmpty(columnName, "Column name");
         validateNotNull(dataType, "Column type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        simpleColumns.put(columnName, new ColumnType(dataType));
-        return getThis();
-    }
-
-    /**
-     * Add column with manually defined data type
-     * <br/>
-     * This method is useful when you want to craft yourself the data type for the column to be created.
-     * <br/>
-     * Examples:
-     *
-     * <p>
-     *     To add a list column:
-     *     <pre class="code"><code class="java">
-     *         addColumn("myList","list&lt;text&gt;")
-     *     </code></pre>
-     *
-     *     To add a set column:
-     *     <pre class="code"><code class="java">
-     *         addColumn("mySet","set&lt;text&gt;")
-     *     </code></pre>
-     *
-     *     To add a map column:
-     *     <pre class="code"><code class="java">
-     *         addColumn("myMap","map&lt;int,text&gt;")
-     *     </code></pre>
-     *
-     *     To add an UDT column:
-     *     <pre class="code"><code class="java">
-     *         addColumn("myUDT","frozen&lt;address&gt;")
-     *     </code></pre>
-     * </p>
-     * @param columnName the name of the column to be added
-     * @param manualDataType the text representation of the data type
-     * @return
-     */
-    public T addColumn(String columnName, String manualDataType) {
-        validateNotEmpty(columnName, "Column name");
-        validateNotEmpty(manualDataType, "Manually defined data type");
-        validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        simpleColumns.put(columnName, new ColumnType(manualDataType));
+        simpleColumns.put(columnName, new NativeColumnType(dataType));
         return getThis();
     }
 
@@ -121,12 +80,11 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
      * @return this CREATE statement.
      *
      */
-    public T addUDTColumn(String columnName, String udtType) {
+    public T addUDTColumn(String columnName, UDTType udtType) {
         validateNotEmpty(columnName, "Column name");
-        validateNotEmpty(udtType, "UDT type");
+        validateNotNull(udtType, "Column type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder typeBuilder = new StringBuilder(FROZEN).append(OPEN_TYPE).append(udtType).append(CLOSE_TYPE);
-        simpleColumns.put(columnName, new ColumnType(typeBuilder.toString()));
+        simpleColumns.put(columnName, udtType);
         return getThis();
     }
 
@@ -138,13 +96,11 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
      * @return this CREATE statement.
      *
      */
-    public T addUDTListColumn(String columnName, String udtType) {
+    public T addUDTListColumn(String columnName, UDTType udtType) {
         validateNotEmpty(columnName, "Column name");
-        validateNotEmpty(udtType, "UDT type");
+        validateNotNull(udtType, "Column element type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder typeBuilder = new StringBuilder(LIST)
-                .append(OPEN_TYPE).append(FROZEN).append(OPEN_TYPE).append(udtType).append(CLOSE_TYPE).append(CLOSE_TYPE);
-        simpleColumns.put(columnName, new ColumnType(typeBuilder.toString()));
+        simpleColumns.put(columnName, UDTType.list(udtType));
         return getThis();
     }
 
@@ -156,13 +112,11 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
      * @return this CREATE statement.
      *
      */
-    public T addUDTSetColumn(String columnName, String udtType) {
+    public T addUDTSetColumn(String columnName, UDTType udtType) {
         validateNotEmpty(columnName, "Column name");
-        validateNotEmpty(udtType, "UDT type");
+        validateNotNull(udtType, "Column element type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder typeBuilder = new StringBuilder(SET)
-                .append(OPEN_TYPE).append(FROZEN).append(OPEN_TYPE).append(udtType).append(CLOSE_TYPE).append(CLOSE_TYPE);
-        simpleColumns.put(columnName, new ColumnType(typeBuilder.toString()));
+        simpleColumns.put(columnName, UDTType.set(udtType));
         return getThis();
     }
 
@@ -175,15 +129,12 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
      * @return this CREATE statement.
      *
      */
-    public T addUDTMapColumn(String columnName, DataType keyType, String valueUdtType) {
+    public T addUDTMapColumn(String columnName, DataType keyType, UDTType valueUdtType) {
         validateNotEmpty(columnName, "Column name");
         validateNotNull(keyType, "Map key type");
-        validateNotEmpty(valueUdtType, "Map value UDT type");
+        validateNotNull(valueUdtType, "Map value UDT type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder typeBuilder = new StringBuilder(MAP)
-                .append(OPEN_TYPE).append(keyType.getName().toString()).append(SEPARATOR)
-                .append(FROZEN).append(OPEN_TYPE).append(valueUdtType).append(CLOSE_TYPE).append(CLOSE_TYPE);
-        simpleColumns.put(columnName, new ColumnType(typeBuilder.toString()));
+        simpleColumns.put(columnName, UDTType.mapWithUDTValue(keyType, valueUdtType));
         return getThis();
     }
 
@@ -196,15 +147,12 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
      * @return this CREATE statement.
      *
      */
-    public T addUDTMapColumn(String columnName, String udtKeyType, DataType valueType) {
+    public T addUDTMapColumn(String columnName, UDTType udtKeyType, DataType valueType) {
         validateNotEmpty(columnName, "Column name");
-        validateNotEmpty(udtKeyType, "Map key UDT type");
+        validateNotNull(udtKeyType, "Map key UDT type");
         validateNotNull(valueType, "Map valye type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder typeBuilder = new StringBuilder(MAP)
-                .append(OPEN_TYPE).append(FROZEN).append(OPEN_TYPE).append(udtKeyType).append(CLOSE_TYPE)
-                .append(SEPARATOR).append(valueType.getName().toString()).append(CLOSE_TYPE);
-        simpleColumns.put(columnName, new ColumnType(typeBuilder.toString()));
+        simpleColumns.put(columnName, UDTType.mapWithUDTKey(udtKeyType, valueType));
         return getThis();
     }
 
@@ -217,60 +165,88 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
      * @return this CREATE statement.
      *
      */
-    public T addUDTMapColumn(String columnName, String udtKeyType, String udtValueType) {
+    public T addUDTMapColumn(String columnName, UDTType udtKeyType, UDTType udtValueType) {
         validateNotEmpty(columnName, "Column name");
-        validateNotEmpty(udtKeyType, "Map key UDT type");
-        validateNotEmpty(udtValueType, "Map value UDT type");
+        validateNotNull(udtKeyType, "Map key UDT type");
+        validateNotNull(udtValueType, "Map value UDT type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder typeBuilder = new StringBuilder(MAP).append(OPEN_TYPE)
-                .append(FROZEN).append(OPEN_TYPE).append(udtKeyType).append(CLOSE_TYPE).append(SEPARATOR)
-                .append(FROZEN).append(OPEN_TYPE).append(udtValueType).append(CLOSE_TYPE).append(CLOSE_TYPE);
-        simpleColumns.put(columnName, new ColumnType(typeBuilder.toString()));
+        simpleColumns.put(columnName, UDTType.mapWithUDTKeyAndValue(udtKeyType, udtValueType));
         return getThis();
     }
 
-    protected StringBuilder buildColumnType(Map.Entry<String, ColumnType> entry) {
+    protected String buildColumnType(Map.Entry<String, ColumnType> entry) {
         final ColumnType columnType = entry.getValue();
-        return new StringBuilder(entry.getKey()).append(SPACE).append(columnType.buildType());
+        return entry.getKey() + SPACE + columnType.asCQLString();
 
     }
 
-    static class ColumnType {
+    /**
+     * Wrapper around UDT and non-UDT types.
+     * <p>
+     * The reason for this interface is that the core API doesn't let us build {@link DataType}s representing UDTs, we have to obtain
+     * them from the cluster metadata. Since we want to use SchemaBuilder without a Cluster instance, UDT types will be provided via
+     * {@link com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType} instances.
+     */
+    static interface ColumnType {
+        String asCQLString();
+    }
 
-        private final Optional<DataType> nativeType;
-        private final Optional<String> rawTypeAsString;
+    static class NativeColumnType implements ColumnType {
+        private final String asCQLString;
 
-        ColumnType(DataType nativeType) {
-            this.nativeType = Optional.fromNullable(nativeType);
-            this.rawTypeAsString = Optional.absent();
+        NativeColumnType(DataType nativeType) {
+            asCQLString = nativeType.toString();
         }
 
-        ColumnType(String rawTypeAsString) {
-            this.nativeType = Optional.absent();
-            this.rawTypeAsString = Optional.fromNullable(rawTypeAsString);
+        @Override public String asCQLString() {
+            return asCQLString;
+        }
+   }
+
+    /**
+     * Represents a CQL type containing a user-defined type (UDT) in a SchemaBuilder statement.
+     * <p>
+     * Use {@link SchemaBuilder#frozen(String)} and {@link SchemaBuilder#udtLiteral(String)} to build instances of this type.
+     */
+    public static class UDTType implements ColumnType {
+        private final String asCQLString;
+
+        private UDTType(String asCQLString) {
+            this.asCQLString = asCQLString;
         }
 
-        String buildType() {
-            if (nativeType.isPresent()) {
-                final StringBuilder column = new StringBuilder();
-                final DataType dataType = nativeType.get();
-                final String type = dataType.getName().toString();
-
-                column.append(type);
-
-                if (dataType.isCollection()) {
-                    final List<DataType> typeArguments = dataType.getTypeArguments();
-                    if (typeArguments.size() == 1) {
-                        column.append(OPEN_TYPE).append(typeArguments.get(0)).append(CLOSE_TYPE);
-                    } else if (typeArguments.size() == 2) {
-                        column.append(OPEN_TYPE).append(typeArguments.get(0)).append(COMMA).append(typeArguments.get(1)).append(CLOSE_TYPE);
-                    }
-                }
-                return column.toString();
-            } else {
-                return rawTypeAsString.get().toString();
-            }
+        @Override public String asCQLString() {
+            return asCQLString;
         }
 
+        static UDTType frozen(String udtName) {
+            validateNotEmpty(udtName, "UDT name");
+            return new UDTType(FROZEN + OPEN_TYPE + udtName + CLOSE_TYPE);
+        }
+
+        static UDTType list(UDTType elementType) {
+            return new UDTType(LIST + OPEN_TYPE + elementType.asCQLString() + CLOSE_TYPE);
+        }
+
+        static UDTType set(UDTType elementType) {
+            return new UDTType(SET + OPEN_TYPE + elementType.asCQLString() + CLOSE_TYPE);
+        }
+
+        static UDTType mapWithUDTKey(UDTType keyType, DataType valueType) {
+            return new UDTType(MAP + OPEN_TYPE + keyType.asCQLString() + SEPARATOR + valueType + CLOSE_TYPE);
+        }
+
+        static UDTType mapWithUDTValue(DataType keyType, UDTType valueType) {
+            return new UDTType(MAP + OPEN_TYPE + keyType + SEPARATOR + valueType.asCQLString() + CLOSE_TYPE);
+        }
+
+        static UDTType mapWithUDTKeyAndValue(UDTType keyType, UDTType valueType) {
+            return new UDTType(MAP + OPEN_TYPE + keyType.asCQLString() + SEPARATOR + valueType.asCQLString() + CLOSE_TYPE);
+        }
+
+        static UDTType literal(String literal) {
+            validateNotEmpty(literal, "UDT type literal");
+            return new UDTType(literal);
+        }
     }
 }

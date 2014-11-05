@@ -79,22 +79,6 @@ public class Alter extends SchemaStatement {
     }
 
     /**
-     * Shorthand method which takes a boolean and calls either {@code info.archinnov.achilles.schemabuilder.Alter.addStaticColumn}
-     * or {@code info.archinnov.achilles.schemabuilder.Alter.addColumn}
-     *
-     * @param columnName the name of the column to be added
-     * @param isStatic  whether the column is static or not
-     * @return a new {@link Alter.AddColumn} instance.
-     */
-    public AddColumn addColumn(String columnName,boolean isStatic) {
-        if (isStatic) {
-            return addStaticColumn(columnName);
-        } else {
-            return addColumn(columnName);
-        }
-    }
-
-    /**
      * Drop a column
      * <p>
      *     Please note that you cannot drop a column that is part of the primary key

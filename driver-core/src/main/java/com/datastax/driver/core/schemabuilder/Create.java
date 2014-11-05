@@ -29,13 +29,15 @@ import com.datastax.driver.core.DataType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
+import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
+
 /**
  * A built CREATE TABLE statement
  */
 public class Create extends AbstractCreateStatement<Create> {
 
     private String tableName;
-    private Map<String, DataType> partitionColumns = new LinkedHashMap<String, DataType>();
+    private Map<String, ColumnType> partitionColumns = new LinkedHashMap<String, ColumnType>();
     private Map<String, ColumnType> clusteringColumns = new LinkedHashMap<String, ColumnType>();
     private Map<String, ColumnType> staticColumns = new LinkedHashMap<String, ColumnType>();
 
@@ -70,10 +72,27 @@ public class Create extends AbstractCreateStatement<Create> {
      * @return this CREATE statement.
      */
     public Create addPartitionKey(String columnName, DataType dataType) {
-        validateNotEmpty(tableName, "Partition key name");
+        validateNotEmpty(columnName, "Partition key name");
         validateNotNull(dataType, "Partition key type");
         validateNotKeyWord(columnName, String.format("The partition key name '%s' is not allowed because it is a reserved keyword", columnName));
-        partitionColumns.put(columnName, dataType);
+        partitionColumns.put(columnName, new NativeColumnType(dataType));
+        return this;
+    }
+
+    /**
+     * Adds a columnName and dataType for a partition key, when the type is a frozen UDT.
+     * <p>
+     * Please note that partition keys are added in the order of their declaration;
+     *
+     * @param columnName the name of the clustering key to be added;
+     * @param udtType the UDT type of the partition key to be added.
+     * @return this CREATE statement.
+     */
+    public Create addUDTPartitionKey(String columnName, UDTType udtType) {
+        validateNotEmpty(columnName, "Clustering key name");
+        validateNotNull(udtType, "UDT partition key type");
+        validateNotKeyWord(columnName, String.format("The partition key name '%s' is not allowed because it is a reserved keyword", columnName));
+        partitionColumns.put(columnName, udtType);
         return this;
     }
 
@@ -87,10 +106,10 @@ public class Create extends AbstractCreateStatement<Create> {
      * @return this CREATE statement.
      */
     public Create addClusteringKey(String columnName, DataType dataType) {
-        validateNotEmpty(tableName, "Clustering key name");
+        validateNotEmpty(columnName, "Clustering key name");
         validateNotNull(dataType, "Clustering key type");
         validateNotKeyWord(columnName, String.format("The clustering key name '%s' is not allowed because it is a reserved keyword", columnName));
-        clusteringColumns.put(columnName, new ColumnType(dataType));
+        clusteringColumns.put(columnName, new NativeColumnType(dataType));
         return this;
     }
 
@@ -100,53 +119,14 @@ public class Create extends AbstractCreateStatement<Create> {
      * Please note that clustering keys are added in the order of their declaration;
      *
      * @param columnName the name of the clustering key to be added;
-     * @param udtTypeName the UDT type of the clustering key to be added.
+     * @param udtType the UDT type of the clustering key to be added.
      * @return this CREATE statement.
      */
-    public Create addClusteringUDTKey(String columnName, String udtTypeName) {
-        validateNotEmpty(tableName, "Clustering key name");
-        validateNotEmpty(udtTypeName, "UDT clustering key name");
+    public Create addUDTClusteringKey(String columnName, UDTType udtType) {
+        validateNotEmpty(columnName, "Clustering key name");
+        validateNotNull(udtType, "UDT clustering key type");
         validateNotKeyWord(columnName, String.format("The clustering key name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder columnBuilder = new StringBuilder(FROZEN).append(OPEN_TYPE).append(udtTypeName).append(CLOSE_TYPE);
-        clusteringColumns.put(columnName, new ColumnType(columnBuilder.toString()));
-        return this;
-    }
-
-
-
-    /**
-     * Shorthand method which takes a boolean and calls either {@link com.datastax.driver.core.schemabuilder.Create}.addStaticColumn
-     * or {@link com.datastax.driver.core.schemabuilder.Create}.addColumn
-     *
-     * @param columnName  the name of the column to be added;
-     * @param dataType the data type of the column to be added.
-     * @param isStatic whether the column is static or not
-     * @return this CREATE statement.
-     */
-    public Create addColumn(String columnName, DataType dataType, boolean isStatic) {
-        if (isStatic) {
-            addStaticColumn(columnName, dataType);
-        } else {
-            addColumn(columnName, dataType);
-        }
-        return this;
-    }
-
-    /**
-     * Shorthand method which takes a boolean and calls either {@link com.datastax.driver.core.schemabuilder.Create}.addStaticColumn
-     * or {@link com.datastax.driver.core.schemabuilder.Create}.addColumn
-     *
-     * @param columnName  the name of the column to be added;
-     * @param udtTypeName the UDT type of the column to be added.
-     * @param isStatic whether the column is static or not
-     * @return this CREATE statement.
-     */
-    public Create addUDTColumn(String columnName, String udtTypeName, boolean isStatic) {
-        if (isStatic) {
-            addStaticUDTColumn(columnName, udtTypeName);
-        } else {
-            addUDTColumn(columnName, udtTypeName);
-        }
+        clusteringColumns.put(columnName, udtType);
         return this;
     }
 
@@ -158,10 +138,10 @@ public class Create extends AbstractCreateStatement<Create> {
      * @return this CREATE statement.
      */
     public Create addStaticColumn(String columnName, DataType dataType) {
-        validateNotEmpty(tableName, "Column name");
+        validateNotEmpty(columnName, "Column name");
         validateNotNull(dataType, "Column type");
         validateNotKeyWord(columnName, String.format("The static column name '%s' is not allowed because it is a reserved keyword", columnName));
-        staticColumns.put(columnName, new ColumnType(dataType));
+        staticColumns.put(columnName, new NativeColumnType(dataType));
         return this;
     }
 
@@ -169,15 +149,14 @@ public class Create extends AbstractCreateStatement<Create> {
      * Adds a <strong>static</strong> columnName and UDT type for a simple column.
      *
      * @param columnName the name of the <strong>static</strong> column to be added;
-     * @param udtTypeName the UDT type of the column to be added.
+     * @param udtType the UDT type of the column to be added.
      * @return this CREATE statement.
      */
-    public Create addStaticUDTColumn(String columnName, String udtTypeName) {
+    public Create addUDTStaticColumn(String columnName, UDTType udtType) {
         validateNotEmpty(tableName, "Column name");
-        validateNotEmpty(udtTypeName, "Column UDT type");
+        validateNotNull(udtType, "Column UDT type");
         validateNotKeyWord(columnName, String.format("The static column name '%s' is not allowed because it is a reserved keyword", columnName));
-        final StringBuilder columnBuilder = new StringBuilder(FROZEN).append(OPEN_TYPE).append(udtTypeName).append(CLOSE_TYPE);
-        staticColumns.put(columnName, new ColumnType(columnBuilder.toString()));
+        staticColumns.put(columnName, udtType);
         return this;
     }
 
@@ -379,33 +358,31 @@ public class Create extends AbstractCreateStatement<Create> {
         List<String> clusteringKeyColumns = new ArrayList<String>();
 
 
-        for (Entry<String, DataType> entry : partitionColumns.entrySet()) {
-            allColumns.add(new StringBuilder(entry.getKey()).append(SPACE).append(entry.getValue().getName().toString()).toString());
+        for (Entry<String, ColumnType> entry : partitionColumns.entrySet()) {
+            allColumns.add(entry.getKey() + SPACE + entry.getValue().asCQLString());
             partitionKeyColumns.add(entry.getKey());
         }
 
         for (Entry<String, ColumnType> entry : clusteringColumns.entrySet()) {
-            allColumns.add(new StringBuilder(entry.getKey()).append(SPACE).append(entry.getValue().buildType()).toString());
+            allColumns.add(entry.getKey() + SPACE + entry.getValue().asCQLString());
             clusteringKeyColumns.add(entry.getKey());
         }
 
         for (Entry<String, ColumnType> entry : staticColumns.entrySet()) {
-            final StringBuilder column = buildColumnType(entry);
-            column.append(SPACE).append(STATIC);
-            allColumns.add(column.toString());
+            allColumns.add(entry.getKey() + SPACE + entry.getValue().asCQLString() + SPACE + STATIC);
         }
 
         for (Entry<String, ColumnType> entry : simpleColumns.entrySet()) {
-            allColumns.add(buildColumnType(entry).toString());
+            allColumns.add(buildColumnType(entry));
         }
 
         String partitionKeyPart = partitionKeyColumns.size() == 1 ?
                 partitionKeyColumns.get(0)
-                : new StringBuilder(OPEN_PAREN).append(Joiner.on(SEPARATOR).join(partitionKeyColumns)).append(CLOSE_PAREN).toString();
+                : OPEN_PAREN + Joiner.on(SEPARATOR).join(partitionKeyColumns) + CLOSE_PAREN;
 
         String primaryKeyPart = clusteringKeyColumns.size() == 0 ?
                 partitionKeyPart
-                : new StringBuilder(partitionKeyPart).append(SEPARATOR).append(Joiner.on(SEPARATOR).join(clusteringKeyColumns)).toString();
+                : partitionKeyPart + SEPARATOR + Joiner.on(SEPARATOR).join(clusteringKeyColumns);
 
         createStatement.append(OPEN_PAREN).append(NEW_LINE).append(TAB).append(TAB);
         createStatement.append(Joiner.on(COLUMN_FORMATTING).join(allColumns));
