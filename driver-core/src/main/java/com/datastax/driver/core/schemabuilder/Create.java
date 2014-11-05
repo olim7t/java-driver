@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import com.datastax.driver.core.DataType;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
 import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
@@ -270,27 +271,16 @@ public class Create extends AbstractCreateStatement<Create> {
                 if (this == o) {
                     return true;
                 }
-                if (o == null || getClass() != o.getClass()) {
-                    return false;
+                if (o instanceof ClusteringOrder) {
+                    ClusteringOrder that = (ClusteringOrder) o;
+                    return Objects.equal(this.clusteringColumnName, that.clusteringColumnName) && Objects.equal(this.sorting, that.sorting);
                 }
-
-                ClusteringOrder that = (ClusteringOrder) o;
-
-                if (clusteringColumnName != null ? !clusteringColumnName.equals(that.clusteringColumnName) : that.clusteringColumnName != null) {
-                    return false;
-                }
-                if (sorting != that.sorting) {
-                    return false;
-                }
-
-                return true;
+                return false;
             }
 
             @Override
             public int hashCode() {
-                int result = clusteringColumnName != null ? clusteringColumnName.hashCode() : 0;
-                result = 31 * result + (sorting != null ? sorting.hashCode() : 0);
-                return result;
+                return Objects.hashCode(clusteringColumnName, sorting);
             }
 
             /**
