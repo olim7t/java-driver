@@ -183,7 +183,7 @@ public class Create extends AbstractCreateStatement<Create> {
 
         private List<ClusteringOrder> clusteringOrderKeys = Collections.emptyList();
 
-        private Optional<Boolean> compactStorage = Optional.absent();
+        private boolean compactStorage;
 
         /**
          * Adds a {@link Create.Options.ClusteringOrder} for this table.
@@ -208,13 +208,12 @@ public class Create extends AbstractCreateStatement<Create> {
         }
 
         /**
-         * Whether to use compact storage option for the table
+         * Enables the compact storage option for the table.
          *
-         * @param compactStorage whether to use compact storage.
          * @return this {@code Options} object
          */
-        public Options compactStorage(Boolean compactStorage) {
-            this.compactStorage = Optional.fromNullable(compactStorage);
+        public Options compactStorage() {
+            this.compactStorage = true;
             return this;
         }
 
@@ -312,7 +311,7 @@ public class Create extends AbstractCreateStatement<Create> {
                 options.add(new StringBuilder(CLUSTERING_ORDER_BY).append(OPEN_PAREN).append(Joiner.on(SUB_OPTION_SEPARATOR).join(clusteringOrderKeys)).append(CLOSE_PAREN).toString());
             }
 
-            if (compactStorage.isPresent() && compactStorage.get()) {
+            if (compactStorage) {
                 if (!create.staticColumns.isEmpty()) {
                     throw new IllegalStateException(String.format("Cannot create table '%s' with compact storage and static columns '%s'", create.tableName, create.staticColumns.keySet()));
                 }

@@ -302,7 +302,7 @@ public class CreateTest {
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .compactStorage(true)
+                .compactStorage()
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -324,7 +324,7 @@ public class CreateTest {
                 .addColumn("name", DataType.text())
                 .withOptions()
                 .clusteringOrder(SchemaBuilder.clusteringOrder("col1", ASC), SchemaBuilder.clusteringOrder("col2", DESC))
-                .compactStorage(true)
+                .compactStorage()
                 .bloomFilterFPChance(0.01)
                 .caching(ROWS_ONLY)
                 .comment("This is a comment")
@@ -337,6 +337,7 @@ public class CreateTest {
                 .maxIndexInterval(512)
                 .memtableFlushPeriodInMillis(12L)
                 .populateIOCacheOnFlush(true)
+                .readRepairChance(0.05)
                 .replicateOnWrite(true)
                 .speculativeRetry(TableOptions.SpeculativeRetryValue.always())
                 .build();
@@ -359,6 +360,7 @@ public class CreateTest {
                 "AND max_index_interval = 512 " +
                 "AND memtable_flush_period_in_ms = 12 " +
                 "AND populate_io_cache_on_flush = true " +
+                "AND read_repair_chance = 0.05 " +
                 "AND replicate_on_write = true " +
                 "AND speculative_retry = 'ALWAYS' AND CLUSTERING ORDER BY(col1 ASC, col2 DESC) AND COMPACT STORAGE");
     }
@@ -623,6 +625,6 @@ public class CreateTest {
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("cluster", DataType.uuid())
                 .addStaticColumn("stat", DataType.text())
-                .withOptions().compactStorage(true).build();
+                .withOptions().compactStorage().build();
     }
 }
