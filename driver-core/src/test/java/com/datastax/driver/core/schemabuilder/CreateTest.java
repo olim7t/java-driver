@@ -389,16 +389,16 @@ public class CreateTest {
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .customOption("key1","value1")
-                .customOption("key2","value2")
+                .freeformOption("key1", "value1")
+                .freeformOption("key2", 1.0)
                 .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
                 "id bigint,\n\t\t" +
                 "name text,\n\t\tPRIMARY KEY(id))\n\t" +
-                "WITH key1 = value1 " +
-                "AND key2 = value2");
+                "WITH key1 = 'value1' " +
+                "AND key2 = 1.0");
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class)

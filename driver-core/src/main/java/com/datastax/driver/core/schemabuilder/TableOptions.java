@@ -367,20 +367,18 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Input your own option as key/value pair of String.
-     * <br/>
-     * This method can be useful when new options have been added to Cassandra but the SchemaBuilder is not yet updated
-     * @param key the name of the option
-     * @param value its value in String representation
-     * @return this table options
+     * Input a free-form option as key/value pair.
+     * <p>
+     * This method is provided as a fallback if the SchemaBuilder is used with a more recent version of Cassandra that has new, unsupported options.
+     *
+     * @param key the name of the option.
+     * @param value its value. If it's a {@code String}, it will be included in single quotes, otherwise the result of invoking its {@code toString}
+     *              method will be used unquoted.
+     * @return this table options.
      */
-    public T customOption(String key, String value) {
+    public T freeformOption(String key, Object value) {
         if (Strings.isNullOrEmpty(key)) {
             throw new IllegalArgumentException("Key for custom option should not be null or blank");
-        }
-
-        if (Strings.isNullOrEmpty(value)) {
-            throw new IllegalArgumentException("Value for custom option should not be null or blank");
         }
         customOptions.add(new RawOption(key, value));
         return (T) this;
@@ -1262,9 +1260,11 @@ public abstract class TableOptions<T extends TableOptions> {
         final String key;
         final String value;
 
-        RawOption(String key, String value) {
+        RawOption(String key, Object value) {
             this.key = key;
-            this.value = value;
+            this.value = (value instanceof String)
+                ? "'" + value + "'"
+                : value.toString();
         }
     }
 }
