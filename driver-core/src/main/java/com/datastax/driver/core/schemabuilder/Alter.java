@@ -20,8 +20,6 @@ import com.datastax.driver.core.DataType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
-import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
-
 public class Alter extends SchemaStatement {
 
     private Optional<String> keyspaceName = Optional.absent();

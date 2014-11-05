@@ -68,7 +68,7 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
         validateNotEmpty(columnName, "Column name");
         validateNotNull(dataType, "Column type");
         validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
-        simpleColumns.put(columnName, new NativeColumnType(dataType));
+        simpleColumns.put(columnName, new ColumnType.NativeColumnType(dataType));
         return getThis();
     }
 
@@ -177,76 +177,5 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
     protected String buildColumnType(Map.Entry<String, ColumnType> entry) {
         final ColumnType columnType = entry.getValue();
         return entry.getKey() + SPACE + columnType.asCQLString();
-
-    }
-
-    /**
-     * Wrapper around UDT and non-UDT types.
-     * <p>
-     * The reason for this interface is that the core API doesn't let us build {@link DataType}s representing UDTs, we have to obtain
-     * them from the cluster metadata. Since we want to use SchemaBuilder without a Cluster instance, UDT types will be provided via
-     * {@link com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType} instances.
-     */
-    static interface ColumnType {
-        String asCQLString();
-    }
-
-    static class NativeColumnType implements ColumnType {
-        private final String asCQLString;
-
-        NativeColumnType(DataType nativeType) {
-            asCQLString = nativeType.toString();
-        }
-
-        @Override public String asCQLString() {
-            return asCQLString;
-        }
-   }
-
-    /**
-     * Represents a CQL type containing a user-defined type (UDT) in a SchemaBuilder statement.
-     * <p>
-     * Use {@link SchemaBuilder#frozen(String)} and {@link SchemaBuilder#udtLiteral(String)} to build instances of this type.
-     */
-    public static class UDTType implements ColumnType {
-        private final String asCQLString;
-
-        private UDTType(String asCQLString) {
-            this.asCQLString = asCQLString;
-        }
-
-        @Override public String asCQLString() {
-            return asCQLString;
-        }
-
-        static UDTType frozen(String udtName) {
-            validateNotEmpty(udtName, "UDT name");
-            return new UDTType(FROZEN + OPEN_TYPE + udtName + CLOSE_TYPE);
-        }
-
-        static UDTType list(UDTType elementType) {
-            return new UDTType(LIST + OPEN_TYPE + elementType.asCQLString() + CLOSE_TYPE);
-        }
-
-        static UDTType set(UDTType elementType) {
-            return new UDTType(SET + OPEN_TYPE + elementType.asCQLString() + CLOSE_TYPE);
-        }
-
-        static UDTType mapWithUDTKey(UDTType keyType, DataType valueType) {
-            return new UDTType(MAP + OPEN_TYPE + keyType.asCQLString() + SEPARATOR + valueType + CLOSE_TYPE);
-        }
-
-        static UDTType mapWithUDTValue(DataType keyType, UDTType valueType) {
-            return new UDTType(MAP + OPEN_TYPE + keyType + SEPARATOR + valueType.asCQLString() + CLOSE_TYPE);
-        }
-
-        static UDTType mapWithUDTKeyAndValue(UDTType keyType, UDTType valueType) {
-            return new UDTType(MAP + OPEN_TYPE + keyType.asCQLString() + SEPARATOR + valueType.asCQLString() + CLOSE_TYPE);
-        }
-
-        static UDTType literal(String literal) {
-            validateNotEmpty(literal, "UDT type literal");
-            return new UDTType(literal);
-        }
     }
 }

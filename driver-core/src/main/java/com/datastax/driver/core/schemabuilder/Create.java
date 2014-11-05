@@ -30,8 +30,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
-import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
-
 /**
  * A built CREATE TABLE statement
  */
@@ -76,7 +74,7 @@ public class Create extends AbstractCreateStatement<Create> {
         validateNotEmpty(columnName, "Partition key name");
         validateNotNull(dataType, "Partition key type");
         validateNotKeyWord(columnName, String.format("The partition key name '%s' is not allowed because it is a reserved keyword", columnName));
-        partitionColumns.put(columnName, new NativeColumnType(dataType));
+        partitionColumns.put(columnName, new ColumnType.NativeColumnType(dataType));
         return this;
     }
 
@@ -110,7 +108,7 @@ public class Create extends AbstractCreateStatement<Create> {
         validateNotEmpty(columnName, "Clustering key name");
         validateNotNull(dataType, "Clustering key type");
         validateNotKeyWord(columnName, String.format("The clustering key name '%s' is not allowed because it is a reserved keyword", columnName));
-        clusteringColumns.put(columnName, new NativeColumnType(dataType));
+        clusteringColumns.put(columnName, new ColumnType.NativeColumnType(dataType));
         return this;
     }
 
@@ -142,7 +140,7 @@ public class Create extends AbstractCreateStatement<Create> {
         validateNotEmpty(columnName, "Column name");
         validateNotNull(dataType, "Column type");
         validateNotKeyWord(columnName, String.format("The static column name '%s' is not allowed because it is a reserved keyword", columnName));
-        staticColumns.put(columnName, new NativeColumnType(dataType));
+        staticColumns.put(columnName, new ColumnType.NativeColumnType(dataType));
         return this;
     }
 

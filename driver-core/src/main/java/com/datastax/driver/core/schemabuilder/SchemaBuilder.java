@@ -15,7 +15,6 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
-import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
 import static com.datastax.driver.core.schemabuilder.Drop.DroppedItem;
 
 /**
