@@ -1010,7 +1010,7 @@ public abstract class TableOptions<T extends TableOptions> {
 
         private Algorithm algorithm;
 
-        private Optional<Integer> chunckLengthInKb = Optional.absent();
+        private Optional<Integer> chunkLengthInKb = Optional.absent();
 
         private Optional<Double> crcCheckChance = Optional.absent();
 
@@ -1064,7 +1064,7 @@ public abstract class TableOptions<T extends TableOptions> {
          * @return
          */
         public CompressionOptions withChunkLengthInKb(Integer chunkLengthInKb) {
-            this.chunckLengthInKb = Optional.fromNullable(chunkLengthInKb);
+            this.chunkLengthInKb = Optional.fromNullable(chunkLengthInKb);
             return this;
         }
 
@@ -1088,8 +1088,8 @@ public abstract class TableOptions<T extends TableOptions> {
             List<String> options = new ArrayList<String>();
             options.add(new StringBuilder("'sstable_compression'").append(VALUE_SEPARATOR).append(algorithm.value()).toString());
 
-            if (chunckLengthInKb.isPresent()) {
-                options.add(new StringBuilder("'chunk_length_kb'").append(VALUE_SEPARATOR).append(chunckLengthInKb.get()).toString());
+            if (chunkLengthInKb.isPresent()) {
+                options.add(new StringBuilder("'chunk_length_kb'").append(VALUE_SEPARATOR).append(chunkLengthInKb.get()).toString());
             }
 
             if (crcCheckChance.isPresent()) {
