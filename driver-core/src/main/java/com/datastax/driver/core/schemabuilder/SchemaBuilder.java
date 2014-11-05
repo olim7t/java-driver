@@ -16,6 +16,7 @@
 package com.datastax.driver.core.schemabuilder;
 
 import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
+import static com.datastax.driver.core.schemabuilder.Drop.DroppedItem;
 
 /**
  * Static methods to build a CQL3 DML statement.
@@ -78,7 +79,7 @@ public final class SchemaBuilder {
      * @return an in-construction DROP TABLE statement.
      */
     public static Drop dropTable(String tableName) {
-        return new Drop(tableName);
+        return new Drop(tableName, DroppedItem.TABLE);
     }
 
     /**
@@ -89,9 +90,8 @@ public final class SchemaBuilder {
      * @return an in-construction DROP TABLE statement.
      */
     public static Drop dropTable(String keyspaceName, String tableName) {
-        return new Drop(keyspaceName, tableName);
+        return new Drop(keyspaceName, tableName, DroppedItem.TABLE);
     }
-
 
     /**
      * Start building a new CREATE INDEX statement
@@ -101,6 +101,27 @@ public final class SchemaBuilder {
      */
     public static CreateIndex createIndex(String indexName) {
         return new CreateIndex(indexName);
+    }
+
+    /**
+     * Start building a new DROP INDEX statement
+     *
+     * @param indexName the name of the index to be dropped.
+     * @return an in-construction DROP INDEX statement.
+     */
+    public static Drop dropIndex(String indexName) {
+        return new Drop(indexName, DroppedItem.INDEX);
+    }
+
+    /**
+     * Start building a new DROP INDEX statement
+     *
+     * @param keyspaceName the name of the keyspace to be used.
+     * @param indexName the name of the index to be dropped.
+     * @return an in-construction DROP INDEX statement.
+     */
+    public static Drop dropIndex(String keyspaceName, String indexName) {
+        return new Drop(keyspaceName, indexName, DroppedItem.INDEX);
     }
 
     /**
@@ -132,6 +153,27 @@ public final class SchemaBuilder {
      */
     public static CreateType createType(String keyspaceName, String typeName) {
         return new CreateType(keyspaceName, typeName);
+    }
+
+    /**
+     * Start building a new DROP TYPE statement
+     *
+     * @param typeName the name of the type to be dropped.
+     * @return an in-construction DROP TYPE statement.
+     */
+    public static Drop dropType(String typeName) {
+        return new Drop(typeName, DroppedItem.TYPE);
+    }
+
+    /**
+     * Start building a new DROP TYPE statement
+     *
+     * @param keyspaceName the name of the keyspace to be used.
+     * @param typeName the name of the type to be dropped.
+     * @return an in-construction DROP TYPE statement.
+     */
+    public static Drop dropType(String keyspaceName, String typeName) {
+        return new Drop(keyspaceName, typeName, DroppedItem.TYPE);
     }
 
     /**

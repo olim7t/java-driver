@@ -54,7 +54,6 @@ public abstract class SchemaStatement {
     static final String WITH = "WITH";
     static final String DROP = "DROP";
 
-    static final String DROP_TABLE = "DROP TABLE";
     static final String IF_EXISTS = "IF EXISTS";
 
 

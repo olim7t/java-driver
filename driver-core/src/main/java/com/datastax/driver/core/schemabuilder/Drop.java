@@ -22,40 +22,44 @@ import com.google.common.base.Optional;
  */
 public class Drop extends SchemaStatement {
 
-    private Optional<String> keyspaceName = Optional.absent();
-    private String tableName;
-    private Optional<Boolean> ifExists = Optional.absent();
+    enum DroppedItem { TABLE, TYPE, INDEX }
 
-    Drop(String keyspaceName, String tableName) {
+    private Optional<String> keyspaceName = Optional.absent();
+    private String itemName;
+    private boolean ifExists;
+    private final String itemType;
+
+    Drop(String keyspaceName, String itemName, DroppedItem itemType) {
+        this.itemType = itemType.name();
         validateNotEmpty(keyspaceName, "Keyspace name");
-        validateNotEmpty(tableName, "Table name");
+        validateNotEmpty(itemName, this.itemType.toLowerCase() + " name");
         validateNotKeyWord(keyspaceName, String.format("The keyspace name '%s' is not allowed because it is a reserved keyword", keyspaceName));
-        validateNotKeyWord(tableName,String.format("The table name '%s' is not allowed because it is a reserved keyword",tableName));
-        this.tableName = tableName;
+        validateNotKeyWord(itemName,String.format("The " + this.itemType.toLowerCase() + " name '%s' is not allowed because it is a reserved keyword",itemName));
+        this.itemName = itemName;
         this.keyspaceName = Optional.fromNullable(keyspaceName);
     }
 
-    Drop(String tableName) {
-        validateNotEmpty(tableName, "Table name");
-        validateNotKeyWord(tableName,String.format("The table name '%s' is not allowed because it is a reserved keyword",tableName));
-        this.tableName = tableName;
+    Drop(String itemName, DroppedItem itemType) {
+        this.itemType = itemType.name();
+        validateNotEmpty(itemName, this.itemType.toLowerCase() + " name");
+        validateNotKeyWord(itemName,String.format("The " + this.itemType.toLowerCase() + " name '%s' is not allowed because it is a reserved keyword", itemName));
+        this.itemName = itemName;
     }
 
     /**
      * Use 'IF EXISTS' CAS condition for the table drop.
      *
-     * @param ifExists whether to use the CAS condition.
      * @return a new {@link Drop} instance.
      */
-    public Drop ifExists(Boolean ifExists) {
-        this.ifExists = Optional.fromNullable(ifExists);
+    public Drop ifExists() {
+        this.ifExists = true;
         return this;
     }
 
     @Override
     String buildInternal() {
-        StringBuilder dropStatement = new StringBuilder(DROP_TABLE);
-        if (ifExists.isPresent() && ifExists.get()) {
+        StringBuilder dropStatement = new StringBuilder(DROP + SPACE + itemType);
+        if (ifExists) {
             dropStatement.append(SPACE).append(IF_EXISTS);
         }
         dropStatement.append(SPACE);
@@ -63,7 +67,7 @@ public class Drop extends SchemaStatement {
             dropStatement.append(keyspaceName.get()).append(DOT);
         }
 
-        dropStatement.append(tableName);
+        dropStatement.append(itemName);
         return dropStatement.toString();
     }
 

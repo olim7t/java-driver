@@ -42,10 +42,64 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_table_with_keyspace_if_exists() throws Exception {
         //When
-        final String built = SchemaBuilder.dropTable("ks", "test").ifExists(true).build();
+        final String built = SchemaBuilder.dropTable("ks", "test").ifExists().build();
 
         //Then
         assertThat(built).isEqualTo("DROP TABLE IF EXISTS ks.test");
+    }
+
+    @Test(groups = "unit")
+    public void should_drop_type() throws Exception {
+        //When
+        final String built = SchemaBuilder.dropType("test").build();
+
+        //Then
+        assertThat(built).isEqualTo("DROP TYPE test");
+    }
+
+    @Test(groups = "unit")
+    public void should_drop_type_with_keyspace() throws Exception {
+        //When
+        final String built = SchemaBuilder.dropType("ks", "test").build();
+
+        //Then
+        assertThat(built).isEqualTo("DROP TYPE ks.test");
+    }
+
+    @Test(groups = "unit")
+    public void should_drop_type_with_keyspace_if_exists() throws Exception {
+        //When
+        final String built = SchemaBuilder.dropType("ks", "test").ifExists().build();
+
+        //Then
+        assertThat(built).isEqualTo("DROP TYPE IF EXISTS ks.test");
+    }
+
+    @Test(groups = "unit")
+    public void should_drop_index() throws Exception {
+        //When
+        final String built = SchemaBuilder.dropIndex("test").build();
+
+        //Then
+        assertThat(built).isEqualTo("DROP INDEX test");
+    }
+
+    @Test(groups = "unit")
+    public void should_drop_index_with_keyspace() throws Exception {
+        //When
+        final String built = SchemaBuilder.dropIndex("ks", "test").build();
+
+        //Then
+        assertThat(built).isEqualTo("DROP INDEX ks.test");
+    }
+
+    @Test(groups = "unit")
+    public void should_drop_index_with_keyspace_if_exists() throws Exception {
+        //When
+        final String built = SchemaBuilder.dropIndex("ks", "test").ifExists().build();
+
+        //Then
+        assertThat(built).isEqualTo("DROP INDEX IF EXISTS ks.test");
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
