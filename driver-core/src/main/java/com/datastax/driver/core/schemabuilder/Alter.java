@@ -20,6 +20,8 @@ import com.datastax.driver.core.DataType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
+import static com.datastax.driver.core.schemabuilder.AbstractCreateStatement.UDTType;
+
 public class Alter extends SchemaStatement {
 
     private Optional<String> keyspaceName = Optional.absent();
@@ -145,6 +147,17 @@ public class Alter extends SchemaStatement {
                     .append(SPACE).append(type.toString());
             return statement.toString();
         }
+
+        /**
+         * Defines the new type of the altered column to a UDT type.
+         * @param udtType the UDT type.
+         * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement.
+         */
+        public String udtType(UDTType udtType) {
+            return alter.buildInternal() + SPACE +
+                ALTER + SPACE + columnName + SPACE +
+                TYPE + SPACE + udtType.asCQLString();
+        }
     }
 
     /**
@@ -172,6 +185,24 @@ public class Alter extends SchemaStatement {
             statement.append(SPACE).append(ADD)
                     .append(SPACE).append(columnName)
                     .append(SPACE).append(type.toString());
+
+            if (staticColumn) {
+                statement.append(SPACE).append(STATIC);
+            }
+
+            return statement.toString();
+        }
+
+        /**
+         * Define the type of the added column to a UDT type.
+         * @param udtType the new type of the added column.
+         * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement.
+         */
+        public String udtType(UDTType udtType) {
+            final StringBuilder statement = new StringBuilder(alter.buildInternal());
+            statement.append(SPACE).append(ADD)
+                    .append(SPACE).append(columnName)
+                    .append(SPACE).append(udtType.asCQLString());
 
             if (staticColumn) {
                 statement.append(SPACE).append(STATIC);

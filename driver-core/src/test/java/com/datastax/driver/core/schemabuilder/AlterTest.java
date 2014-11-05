@@ -15,6 +15,7 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
 import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.NONE;
 import static com.datastax.driver.core.schemabuilder.TableOptions.Caching.ROWS_ONLY;
 import static com.datastax.driver.core.schemabuilder.TableOptions.CachingRowsPerPartition.rows;
@@ -46,12 +47,30 @@ public class AlterTest {
     }
 
     @Test(groups = "unit")
+    public void should_alter_column_type_to_UDT() throws Exception {
+        //When
+        final String built = SchemaBuilder.alterTable("ks", "test").alterColumn("address").udtType(frozen("address"));
+
+        //Then
+        assertThat(built).isEqualTo("\n\tALTER TABLE ks.test ALTER address TYPE frozen<address>");
+    }
+
+    @Test(groups = "unit")
     public void should_add_column() throws Exception {
         //When
         final String built = SchemaBuilder.alterTable("test").addColumn("location").type(DataType.ascii());
 
         //Then
         assertThat(built).isEqualTo("\n\tALTER TABLE test ADD location ascii");
+    }
+
+    @Test(groups = "unit")
+    public void should_add_column_with_UDT_type() throws Exception {
+        //When
+        final String built = SchemaBuilder.alterTable("test").addColumn("location").udtType(frozen("address"));
+
+        //Then
+        assertThat(built).isEqualTo("\n\tALTER TABLE test ADD location frozen<address>");
     }
 
     @Test(groups = "unit")
