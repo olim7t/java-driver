@@ -19,12 +19,14 @@ import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+
 public class DropTest {
 
     @Test(groups = "unit")
     public void should_drop_table() throws Exception {
         //When
-        final String built = SchemaBuilder.dropTable("test").build();
+        final String built = dropTable("test").build();
 
         //Then
         assertThat(built).isEqualTo("DROP TABLE test");
@@ -33,7 +35,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_table_with_keyspace() throws Exception {
         //When
-        final String built = SchemaBuilder.dropTable("ks", "test").build();
+        final String built = dropTable("ks", "test").build();
 
         //Then
         assertThat(built).isEqualTo("DROP TABLE ks.test");
@@ -42,7 +44,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_table_with_keyspace_if_exists() throws Exception {
         //When
-        final String built = SchemaBuilder.dropTable("ks", "test").ifExists().build();
+        final String built = dropTable("ks", "test").ifExists().build();
 
         //Then
         assertThat(built).isEqualTo("DROP TABLE IF EXISTS ks.test");
@@ -51,7 +53,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_type() throws Exception {
         //When
-        final String built = SchemaBuilder.dropType("test").build();
+        final String built = dropType("test").build();
 
         //Then
         assertThat(built).isEqualTo("DROP TYPE test");
@@ -60,7 +62,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_type_with_keyspace() throws Exception {
         //When
-        final String built = SchemaBuilder.dropType("ks", "test").build();
+        final String built = dropType("ks", "test").build();
 
         //Then
         assertThat(built).isEqualTo("DROP TYPE ks.test");
@@ -69,7 +71,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_type_with_keyspace_if_exists() throws Exception {
         //When
-        final String built = SchemaBuilder.dropType("ks", "test").ifExists().build();
+        final String built = dropType("ks", "test").ifExists().build();
 
         //Then
         assertThat(built).isEqualTo("DROP TYPE IF EXISTS ks.test");
@@ -78,7 +80,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_index() throws Exception {
         //When
-        final String built = SchemaBuilder.dropIndex("test").build();
+        final String built = dropIndex("test").build();
 
         //Then
         assertThat(built).isEqualTo("DROP INDEX test");
@@ -87,7 +89,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_index_with_keyspace() throws Exception {
         //When
-        final String built = SchemaBuilder.dropIndex("ks", "test").build();
+        final String built = dropIndex("ks", "test").build();
 
         //Then
         assertThat(built).isEqualTo("DROP INDEX ks.test");
@@ -96,7 +98,7 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_index_with_keyspace_if_exists() throws Exception {
         //When
-        final String built = SchemaBuilder.dropIndex("ks", "test").ifExists().build();
+        final String built = dropIndex("ks", "test").ifExists().build();
 
         //Then
         assertThat(built).isEqualTo("DROP INDEX IF EXISTS ks.test");
@@ -105,12 +107,12 @@ public class DropTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
         expectedExceptionsMessageRegExp = "The keyspace name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_keyspace_name_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.dropTable("add","test").build();
+        dropTable("add", "test").build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.dropTable("add").build();
+        dropTable("add").build();
     }
 }

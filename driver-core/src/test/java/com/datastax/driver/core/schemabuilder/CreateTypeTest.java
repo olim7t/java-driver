@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.driver.core.DataType;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.udtLiteral;
 
@@ -29,7 +30,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_UDT() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addColumn("col2", DataType.bigint())
                 .build();
@@ -43,7 +44,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_UDT_if_not_exists() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("myType")
+        final String built = createType("myType")
                 .ifNotExists()
                 .addColumn("col1", DataType.text())
                 .addColumn("col2", DataType.bigint())
@@ -58,7 +59,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_simple_UDT_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addUDTColumn("my_udt", frozen("address"))
                 .build();
@@ -73,7 +74,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_list_UDT_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addUDTListColumn("my_udt", frozen("address"))
                 .build();
@@ -88,7 +89,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_set_UDT_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addUDTSetColumn("my_udt", frozen("address"))
                 .build();
@@ -103,7 +104,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_key_UDT_map_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addUDTMapColumn("my_udt", frozen("address"), DataType.text())
                 .build();
@@ -118,7 +119,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_value_UDT_map_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addUDTMapColumn("my_udt", DataType.cint(), frozen("address"))
                 .build();
@@ -133,7 +134,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_key_value_UDT_map_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addUDTMapColumn("my_udt", frozen("coords"), frozen("address"))
                 .build();
@@ -148,7 +149,7 @@ public class CreateTypeTest {
     @Test(groups = "unit")
     public void should_create_column_with_manual_type() throws Exception {
         //When
-        final String built = SchemaBuilder.createType("ks", "myType")
+        final String built = createType("ks", "myType")
                 .addColumn("col1", DataType.text())
                 .addUDTColumn("my_udt", udtLiteral("frozen<address>"))
                 .build();

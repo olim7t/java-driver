@@ -15,10 +15,8 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting.ASC;
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting.DESC;
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Caching.ROWS_ONLY;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.driver.core.DataType;
@@ -32,7 +30,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .build();
@@ -46,7 +44,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_udt_partition_key() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
             .addUDTPartitionKey("u", frozen("user"))
             .build();
 
@@ -59,13 +57,13 @@ public class CreateTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class)
     public void should_exception_when_creating_table_without_partition_key() throws Exception {
-        SchemaBuilder.createTable("test").addColumn("name", DataType.text()).build();
+        createTable("test").addColumn("name", DataType.text()).build();
     }
 
     @Test(groups = "unit")
     public void should_create_simple_table_if_not_exists() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .ifNotExists()
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
@@ -80,7 +78,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_keyspace() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("ks", "test")
+        final String built = createTable("ks", "test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .build();
@@ -95,7 +93,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_list() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("friends", DataType.list(DataType.text()))
                 .build();
@@ -109,7 +107,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_set() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("friends", DataType.set(DataType.text()))
                 .build();
@@ -123,7 +121,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_map() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("friends", DataType.map(DataType.cint(), DataType.text()))
                 .build();
@@ -137,7 +135,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_clustering_keys() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
@@ -155,7 +153,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_udt_clustering_keys() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addUDTClusteringKey("col2", frozen("address"))
@@ -173,7 +171,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_composite_partition_key() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id1", DataType.bigint())
                 .addPartitionKey("id2", DataType.text())
                 .addColumn("name", DataType.text())
@@ -189,7 +187,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_composite_partition_key_and_clustering_keys() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id1", DataType.bigint())
                 .addPartitionKey("id2", DataType.text())
                 .addClusteringKey("col1", DataType.uuid())
@@ -209,7 +207,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_static_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col", DataType.uuid())
                 .addStaticColumn("bucket", DataType.cint())
@@ -227,7 +225,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_udt_static_column() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col", DataType.uuid())
                 .addUDTStaticColumn("bucket", frozen("address"))
@@ -245,13 +243,13 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_clustering_order() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .clusteringOrder(SchemaBuilder.clusteringOrder("col1", ASC), SchemaBuilder.clusteringOrder("col2", DESC))
+                .clusteringOrder(clusteringOrder("col1", Sorting.ASC), clusteringOrder("col2", Sorting.DESC))
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -265,7 +263,7 @@ public class CreateTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_exception_when_no_clustering_order_provided() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
@@ -275,28 +273,28 @@ public class CreateTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_exception_when_blank_clustering_order_column_provided() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
-                .withOptions().clusteringOrder(SchemaBuilder.clusteringOrder("", DESC)).build();
+                .withOptions().clusteringOrder(clusteringOrder("", Sorting.DESC)).build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_exception_when_clustering_order_column_does_not_match_declared_clustering_keys() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
-                .withOptions().clusteringOrder(SchemaBuilder.clusteringOrder("col3", ASC)).build();
+                .withOptions().clusteringOrder(clusteringOrder("col3", Sorting.ASC)).build();
     }
 
     @Test(groups = "unit")
     public void should_create_table_with_compact_storage() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
@@ -317,19 +315,19 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_all_options() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .clusteringOrder(SchemaBuilder.clusteringOrder("col1", ASC), SchemaBuilder.clusteringOrder("col2", DESC))
+                .clusteringOrder(clusteringOrder("col1", Sorting.ASC), clusteringOrder("col2", Sorting.DESC))
                 .compactStorage()
                 .bloomFilterFPChance(0.01)
-                .caching(ROWS_ONLY)
+                .caching(Caching.ROWS_ONLY)
                 .comment("This is a comment")
-                .compactionOptions(SchemaBuilder.leveledStrategy().ssTableSizeInMB(160))
-                .compressionOptions(SchemaBuilder.lz4())
+                .compactionOptions(leveledStrategy().ssTableSizeInMB(160))
+                .compressionOptions(lz4())
                 .dcLocalReadRepairChance(0.21)
                 .defaultTimeToLive(100)
                 .gcGraceSeconds(9999L)
@@ -339,7 +337,7 @@ public class CreateTest {
                 .populateIOCacheOnFlush(true)
                 .readRepairChance(0.05)
                 .replicateOnWrite(true)
-                .speculativeRetry(SchemaBuilder.always())
+                .speculativeRetry(always())
                 .build();
 
         //Then
@@ -368,11 +366,11 @@ public class CreateTest {
     @Test(groups = "unit")
          public void should_build_table_with_new_caching_options() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .caching(SchemaBuilder.Caching.ALL, SchemaBuilder.rows(100))
+                .caching(Caching.ALL, rows(100))
                 .build();
 
         //Then
@@ -385,7 +383,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_build_table_with_custom_option() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
@@ -403,27 +401,27 @@ public class CreateTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class)
     public void should_exception_when_wrong_caching_type_with_rows_per_partition() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .caching(SchemaBuilder.Caching.KEYS_ONLY, SchemaBuilder.allRows())
+                .caching(Caching.KEYS_ONLY, allRows())
                 .build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_exception_when_negative_rows_per_partition() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .caching(SchemaBuilder.Caching.ALL, SchemaBuilder.rows(-3))
+                .caching(Caching.ALL, rows(-3))
                 .build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_exception_when_read_repair_chance_out_of_bound() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
@@ -433,7 +431,7 @@ public class CreateTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_exception_when_read_repair_chance_negative() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
@@ -444,11 +442,11 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_speculative_retry_none() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .speculativeRetry(SchemaBuilder.noSpeculativeRetry())
+                .speculativeRetry(noSpeculativeRetry())
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -461,11 +459,11 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_speculative_retry_in_percentile() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .speculativeRetry(SchemaBuilder.percentile(95))
+                .speculativeRetry(percentile(95))
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -478,11 +476,11 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_speculative_retry_in_milli_secs() throws Exception {
         //When
-        final String built = SchemaBuilder.createTable("test")
+        final String built = createTable("test")
                 .addPartitionKey("id", DataType.bigint())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .speculativeRetry(SchemaBuilder.millisecs(12))
+                .speculativeRetry(millisecs(12))
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -495,7 +493,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
         expectedExceptionsMessageRegExp = "The '\\[pk\\]' columns can not be declared as partition keys and clustering keys at the same time")
     public void should_fail_if_same_partition_and_clustering_column() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("pk", DataType.bigint())
                 .build();
@@ -504,7 +502,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
             expectedExceptionsMessageRegExp = "The '\\[pk\\]' columns can not be declared as partition keys and simple columns at the same time")
     public void should_fail_if_same_partition_and_simple_column() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addColumn("pk", DataType.text())
                 .build();
@@ -513,7 +511,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
             expectedExceptionsMessageRegExp = "The '\\[cluster\\]' columns can not be declared as clustering keys and simple columns at the same time")
     public void should_fail_if_same_clustering_and_simple_column() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("cluster", DataType.bigint())
                 .addColumn("cluster", DataType.text())
@@ -523,7 +521,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
             expectedExceptionsMessageRegExp = "The '\\[pk\\]' columns can not be declared as partition keys and static columns at the same time")
     public void should_fail_if_same_partition_and_static_column() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addStaticColumn("pk", DataType.text())
                 .build();
@@ -532,7 +530,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
             expectedExceptionsMessageRegExp = "The '\\[cluster\\]' columns can not be declared as clustering keys and static columns at the same time")
     public void should_fail_if_same_clustering_and_static_column() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("cluster", DataType.bigint())
                 .addStaticColumn("cluster", DataType.text())
@@ -542,7 +540,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
             expectedExceptionsMessageRegExp = "The '\\[col\\]' columns can not be declared as simple columns and static columns at the same time")
     public void should_fail_if_same_simple_and_static_column() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("cluster",DataType.uuid())
                 .addColumn("col", DataType.bigint())
@@ -553,7 +551,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
             expectedExceptionsMessageRegExp = "The table 'test' cannot declare static columns '\\[stat\\]' without clustering columns")
     public void should_fail_if_static_column_in_non_clustered_table() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addStaticColumn("stat", DataType.text())
                 .build();
@@ -562,7 +560,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The keyspace name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_keyspace_name_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.createTable("add","test")
+        createTable("add", "test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addColumn("col", DataType.text())
                 .build();
@@ -572,7 +570,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.createTable("add")
+        createTable("add")
                 .addPartitionKey("pk", DataType.bigint())
                 .addColumn("col", DataType.text())
                 .build();
@@ -581,7 +579,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The partition key name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_partition_key_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("add", DataType.bigint())
                 .addColumn("col", DataType.text())
                 .build();
@@ -590,7 +588,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The clustering key name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_clustering_key_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("add", DataType.uuid())
                 .addColumn("col", DataType.text())
@@ -600,7 +598,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_simple_column_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("cluster", DataType.uuid())
                 .addColumn("add", DataType.text())
@@ -610,7 +608,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "The static column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_static_column_is_a_reserved_keyword() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("cluster", DataType.uuid())
                 .addStaticColumn("add", DataType.text())
@@ -621,7 +619,7 @@ public class CreateTest {
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
             expectedExceptionsMessageRegExp = "Cannot create table 'test' with compact storage and static columns '\\[stat\\]'")
     public void should_fail_creating_table_with_static_columns_and_compact_storage() throws Exception {
-        SchemaBuilder.createTable("test")
+        createTable("test")
                 .addPartitionKey("pk", DataType.bigint())
                 .addClusteringKey("cluster", DataType.uuid())
                 .addStaticColumn("stat", DataType.text())

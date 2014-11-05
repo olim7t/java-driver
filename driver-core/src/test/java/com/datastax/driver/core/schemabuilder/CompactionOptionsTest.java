@@ -18,6 +18,7 @@ package com.datastax.driver.core.schemabuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.Test;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
 import static com.datastax.driver.core.schemabuilder.TableOptions.CompactionOptions.DateTieredCompactionStrategyOptions.TimeStampResolution;
 
 public class CompactionOptionsTest {
@@ -25,8 +26,7 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_sized_tiered_compaction_options() throws Exception {
         //When
-        final String build = SchemaBuilder
-                .sizedTieredStategy()
+        final String build = sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
                 .coldReadsRatioToOmit(0.89)
@@ -56,8 +56,7 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_leveled_compaction_option() throws Exception {
         //When
-        final String build = SchemaBuilder
-                .leveledStrategy()
+        final String build = leveledStrategy()
                 .enableBackgroundCompaction(true)
                 .ssTableSizeInMB(160)
                 .tombstoneCompactionIntervalInDay(3)
@@ -77,8 +76,7 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_date_tiered_compaction_option() throws Exception {
         //When
-        String build = SchemaBuilder
-            .dateTieredStrategy()
+        String build = dateTieredStrategy()
             .baseTimeSeconds(7200)
             .enableBackgroundCompaction(true)
             .maxSSTableAgeDays(400)
@@ -107,8 +105,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ratio_out_of_range() throws Exception {
-        SchemaBuilder
-                .sizedTieredStategy()
+        sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
                 .coldReadsRatioToOmit(1.89)
@@ -117,8 +114,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ratio_negative() throws Exception {
-        SchemaBuilder
-                .sizedTieredStategy()
+        sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
                 .coldReadsRatioToOmit(-1.0)
@@ -127,8 +123,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_out_of_range() throws Exception {
-        SchemaBuilder
-                .sizedTieredStategy()
+        sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
                 .tombstoneThreshold(1.89)
@@ -137,8 +132,7 @@ public class CompactionOptionsTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_negative() throws Exception {
-        SchemaBuilder
-                .sizedTieredStategy()
+        sizedTieredStategy()
                 .bucketLow(0.5)
                 .bucketHigh(1.2)
                 .coldReadsRatioToOmit(-1.0)

@@ -18,12 +18,14 @@ package com.datastax.driver.core.schemabuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.Test;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+
 public class CreateIndexTest {
 
     @Test(groups = "unit")
     public void should_create_index() throws Exception {
         //Given //When
-        final String statement = SchemaBuilder.createIndex("myIndex").ifNotExists().onTable("ks", "test").andColumn("col");
+        final String statement = createIndex("myIndex").ifNotExists().onTable("ks", "test").andColumn("col");
 
         //Then
         assertThat(statement).isEqualTo("\n\tCREATE INDEX IF NOT EXISTS myIndex ON ks.test(col)");
@@ -32,7 +34,7 @@ public class CreateIndexTest {
     @Test(groups = "unit")
     public void should_create_index_on_keys_of_map_column() throws Exception {
         //Given //When
-        final String statement = SchemaBuilder.createIndex("myIndex").ifNotExists().onTable("ks", "test").andKeysOfColumn("col");
+        final String statement = createIndex("myIndex").ifNotExists().onTable("ks", "test").andKeysOfColumn("col");
 
         //Then
         assertThat(statement).isEqualTo("\n\tCREATE INDEX IF NOT EXISTS myIndex ON ks.test(KEYS(col))");

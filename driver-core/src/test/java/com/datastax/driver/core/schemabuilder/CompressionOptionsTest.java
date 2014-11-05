@@ -18,13 +18,14 @@ package com.datastax.driver.core.schemabuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.Test;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
 
 public class CompressionOptionsTest {
 
     @Test(groups = "unit")
     public void should_build_compressions_options_for_lz4() throws Exception {
         //When
-        final String build = SchemaBuilder.lz4().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
+        final String build = lz4().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
 
         //Then
         assertThat(build).isEqualTo("{'sstable_compression' : 'LZ4Compressor', 'chunk_length_kb' : 128, 'crc_check_chance' : 0.6}");
@@ -33,7 +34,7 @@ public class CompressionOptionsTest {
     @Test(groups = "unit")
     public void should_create_snappy_compressions_options() throws Exception {
         //When
-        final String build = SchemaBuilder.snappy().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
+        final String build = snappy().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
 
         //Then
         assertThat(build).isEqualTo("{'sstable_compression' : 'SnappyCompressor', 'chunk_length_kb' : 128, 'crc_check_chance' : 0.6}");
@@ -42,7 +43,7 @@ public class CompressionOptionsTest {
     @Test(groups = "unit")
     public void should_create_deflate_compressions_options() throws Exception {
         //When
-        final String build = SchemaBuilder.deflate().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
+        final String build = deflate().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
 
         //Then
         assertThat(build).isEqualTo("{'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 128, 'crc_check_chance' : 0.6}");
@@ -51,7 +52,7 @@ public class CompressionOptionsTest {
     @Test(groups = "unit")
     public void should_create_no_compressions_options() throws Exception {
         //When
-        final String build = SchemaBuilder.noCompression().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
+        final String build = noCompression().withChunkLengthInKb(128).withCRCCheckChance(0.6D).build();
 
         //Then
         assertThat(build).isEqualTo("{'sstable_compression' : ''}");
