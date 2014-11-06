@@ -90,9 +90,7 @@ public class Alter extends SchemaStatement {
     public String dropColumn(String columnName) {
         validateNotEmpty(columnName, "Column to be dropped");
         validateNotKeyWord(columnName,String.format("The dropped column name '%s' is not allowed because it is a reserved keyword",columnName));
-        return new StringBuilder(this.buildInternal())
-                .append(SPACE).append(DROP)
-                .append(SPACE).append(columnName).toString();
+        return this.buildInternal() + " DROP " + columnName;
     }
 
     /**
@@ -138,12 +136,7 @@ public class Alter extends SchemaStatement {
          * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement
          */
         public String type(DataType type) {
-            final StringBuilder statement = new StringBuilder(alter.buildInternal());
-            statement.append(SPACE).append(ALTER)
-                    .append(SPACE).append(columnName)
-                    .append(SPACE).append(TYPE)
-                    .append(SPACE).append(type.toString());
-            return statement.toString();
+            return alter.buildInternal() + " ALTER " + columnName + " TYPE " + type.toString();
         }
 
         /**
@@ -152,9 +145,7 @@ public class Alter extends SchemaStatement {
          * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement.
          */
         public String udtType(UDTType udtType) {
-            return alter.buildInternal() + SPACE +
-                ALTER + SPACE + columnName + SPACE +
-                TYPE + SPACE + udtType.asCQLString();
+            return alter.buildInternal() + " ALTER " + columnName + " TYPE " + udtType.asCQLString();
         }
     }
 
@@ -179,16 +170,8 @@ public class Alter extends SchemaStatement {
          * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement
          */
         public String type(DataType type) {
-            final StringBuilder statement = new StringBuilder(alter.buildInternal());
-            statement.append(SPACE).append(ADD)
-                    .append(SPACE).append(columnName)
-                    .append(SPACE).append(type.toString());
-
-            if (staticColumn) {
-                statement.append(SPACE).append(STATIC);
-            }
-
-            return statement.toString();
+            return alter.buildInternal() + " ADD " + columnName + " " + type.toString()
+                + (staticColumn ? " static" : "");
         }
 
         /**
@@ -197,16 +180,8 @@ public class Alter extends SchemaStatement {
          * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement.
          */
         public String udtType(UDTType udtType) {
-            final StringBuilder statement = new StringBuilder(alter.buildInternal());
-            statement.append(SPACE).append(ADD)
-                    .append(SPACE).append(columnName)
-                    .append(SPACE).append(udtType.asCQLString());
-
-            if (staticColumn) {
-                statement.append(SPACE).append(STATIC);
-            }
-
-            return statement.toString();
+            return alter.buildInternal() + " ADD " + columnName + " " + udtType.asCQLString()
+                + (staticColumn ? " static" : "");
         }
     }
 
@@ -229,14 +204,9 @@ public class Alter extends SchemaStatement {
          * @return the final <strong>ALTER TABLE RENAME {@code columnName} TO {@code newColumnName} </strong> statement
          */
         public String to(String newColumnName) {
-            final StringBuilder statement = new StringBuilder(alter.buildInternal());
             validateNotEmpty(newColumnName, "New column name");
             validateNotKeyWord(newColumnName,String.format("The new column name '%s' is not allowed because it is a reserved keyword",newColumnName));
-            statement.append(SPACE).append(RENAME)
-                    .append(SPACE).append(columnName)
-                    .append(SPACE).append(TO)
-                    .append(SPACE).append(newColumnName);
-            return statement.toString();
+            return alter.buildInternal() + " RENAME " + columnName + " TO " + newColumnName;
         }
     }
 
@@ -249,13 +219,6 @@ public class Alter extends SchemaStatement {
             super(alter);
         }
 
-        @Override
-        String buildOptions() {
-            final List<String> commonOptions = super.buildCommonOptions();
-            return new StringBuilder(WITH).append(SPACE).append(Joiner.on(OPTION_SEPARATOR).join(commonOptions)).toString();
-        }
-
-
         /**
          * Generate the final ALTER TABLE statement <strong>with</strong> table options
          *
@@ -263,19 +226,22 @@ public class Alter extends SchemaStatement {
          */
         @Override
         public String build() {
-            return new StringBuilder(super.build()).append(SPACE).append(buildOptions()).toString();
+            return super.build() + " " + buildOptions();
+        }
+
+        private String buildOptions() {
+            final List<String> commonOptions = super.buildCommonOptions();
+            return "WITH " + Joiner.on(" AND ").join(commonOptions);
         }
 
     }
 
     @Override
     String buildInternal() {
-        StringBuilder alterStatement = new StringBuilder(NEW_LINE).append(TAB).append(ALTER_TABLE);
-        alterStatement.append(SPACE);
-        if (keyspaceName.isPresent()) {
-            alterStatement.append(keyspaceName.get()).append(DOT);
-        }
-        alterStatement.append(tableName);
-        return alterStatement.toString();
+        String tableSpec = keyspaceName.isPresent()
+            ? keyspaceName.get() + "." + tableName
+            : tableName;
+
+        return STATEMENT_START + "ALTER TABLE " + tableSpec;
     }
 }

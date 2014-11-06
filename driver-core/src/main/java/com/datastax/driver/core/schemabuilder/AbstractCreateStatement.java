@@ -175,6 +175,6 @@ public abstract class AbstractCreateStatement<T extends AbstractCreateStatement<
 
     protected String buildColumnType(Map.Entry<String, ColumnType> entry) {
         final ColumnType columnType = entry.getValue();
-        return entry.getKey() + SPACE + columnType.asCQLString();
+        return entry.getKey() + " " + columnType.asCQLString();
     }
 }

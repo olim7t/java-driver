@@ -58,13 +58,12 @@ public class Drop extends SchemaStatement {
 
     @Override
     String buildInternal() {
-        StringBuilder dropStatement = new StringBuilder(DROP + SPACE + itemType);
+        StringBuilder dropStatement = new StringBuilder("DROP " + itemType + " ");
         if (ifExists) {
-            dropStatement.append(SPACE).append(IF_EXISTS);
+            dropStatement.append("IF EXISTS ");
         }
-        dropStatement.append(SPACE);
         if (keyspaceName.isPresent()) {
-            dropStatement.append(keyspaceName.get()).append(DOT);
+            dropStatement.append(keyspaceName.get()).append(".");
         }
 
         dropStatement.append(itemName);

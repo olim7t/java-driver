@@ -38,15 +38,6 @@ import com.google.common.base.Strings;
  */
 public abstract class TableOptions<T extends TableOptions> {
 
-    static final String VALUE_SEPARATOR = " : ";
-    static final String START_SUB_OPTIONS = "{";
-    static final String SUB_OPTION_SEPARATOR = ", ";
-    static final String END_SUB_OPTIONS = "}";
-    static final String OPTION_ASSIGNMENT = " = ";
-    static final String QUOTE = "'";
-    static final String OPTION_SEPARATOR = " AND ";
-
-
     private SchemaStatement schemaStatement;
 
     private Optional<SchemaBuilder.Caching> caching = Optional.absent();
@@ -397,68 +388,68 @@ public abstract class TableOptions<T extends TableOptions> {
         buildCachingOptions(options);
 
         if (bloomFilterFPChance.isPresent()) {
-            options.add(new StringBuilder("bloom_filter_fp_chance").append(OPTION_ASSIGNMENT).append(bloomFilterFPChance.get()).toString());
+            options.add("bloom_filter_fp_chance = " + bloomFilterFPChance.get());
         }
 
         if (comment.isPresent()) {
-            options.add(new StringBuilder("comment").append(OPTION_ASSIGNMENT).append(QUOTE).append(comment.get()).append(QUOTE).toString());
+            options.add("comment = '" + comment.get() + "'");
         }
 
         if (compressionOptions.isPresent()) {
-            options.add(new StringBuilder("compression").append(OPTION_ASSIGNMENT).append(compressionOptions.get().build()).toString());
+            options.add("compression = " + compressionOptions.get().build());
         }
 
         if (compactionOptions.isPresent()) {
-            options.add(new StringBuilder("compaction").append(OPTION_ASSIGNMENT).append(compactionOptions.get().build()).toString());
+            options.add("compaction = " + compactionOptions.get().build());
         }
 
         if (dcLocalReadRepairChance.isPresent()) {
-            options.add(new StringBuilder("dclocal_read_repair_chance").append(OPTION_ASSIGNMENT).append(dcLocalReadRepairChance.get()).toString());
+            options.add("dclocal_read_repair_chance = " + dcLocalReadRepairChance.get());
         }
 
         if (defaultTTL.isPresent()) {
-            options.add(new StringBuilder("default_time_to_live").append(OPTION_ASSIGNMENT).append(defaultTTL.get()).toString());
+            options.add("default_time_to_live = " + defaultTTL.get());
         }
 
         if (gcGraceSeconds.isPresent()) {
-            options.add(new StringBuilder("gc_grace_seconds").append(OPTION_ASSIGNMENT).append(gcGraceSeconds.get()).toString());
+            options.add("gc_grace_seconds = " + gcGraceSeconds.get());
         }
 
         if (indexInterval.isPresent()) {
-            options.add(new StringBuilder("index_interval").append(OPTION_ASSIGNMENT).append(indexInterval.get()).toString());
+            options.add("index_interval = " + indexInterval.get());
         }
 
         if (minIndexInterval.isPresent()) {
-            options.add(new StringBuilder("min_index_interval").append(OPTION_ASSIGNMENT).append(minIndexInterval.get()).toString());
+            options.add("min_index_interval = " + minIndexInterval.get());
         }
 
         if (maxIndexInterval.isPresent()) {
-            options.add(new StringBuilder("max_index_interval").append(OPTION_ASSIGNMENT).append(maxIndexInterval.get()).toString());
+            options.add("max_index_interval = " + maxIndexInterval.get());
         }
 
         if (memtableFlushPeriodInMillis.isPresent()) {
-            options.add(new StringBuilder("memtable_flush_period_in_ms").append(OPTION_ASSIGNMENT).append(memtableFlushPeriodInMillis.get()).toString());
+            options.add("memtable_flush_period_in_ms = " + memtableFlushPeriodInMillis.get());
         }
 
         if (populateIOOnCacheFlush.isPresent()) {
-            options.add(new StringBuilder("populate_io_cache_on_flush").append(OPTION_ASSIGNMENT).append(populateIOOnCacheFlush.get()).toString());
+            options.add("populate_io_cache_on_flush = " + populateIOOnCacheFlush.get());
         }
 
         if (readRepairChance.isPresent()) {
-            options.add(new StringBuilder("read_repair_chance").append(OPTION_ASSIGNMENT).append(readRepairChance.get()).toString());
+            options.add("read_repair_chance = " + readRepairChance.get());
         }
 
         if (replicateOnWrite.isPresent()) {
-            options.add(new StringBuilder("replicate_on_write").append(OPTION_ASSIGNMENT).append(replicateOnWrite.get()).toString());
+            options.add("replicate_on_write = " + replicateOnWrite.get());
         }
 
         if (speculativeRetry.isPresent()) {
-            options.add(new StringBuilder("speculative_retry").append(OPTION_ASSIGNMENT).append(speculativeRetry.get().value()).toString());
+            options.add("speculative_retry = " + speculativeRetry.get().value());
         }
 
         if (!customOptions.isEmpty()) {
             for (RawOption customOption : customOptions) {
-                options.add(new StringBuilder(customOption.key).append(OPTION_ASSIGNMENT).append(customOption.value).toString());
+                options.add(customOption.key + " = " + customOption.value);
             }
         }
         return options;
@@ -469,28 +460,16 @@ public abstract class TableOptions<T extends TableOptions> {
             if (cachingRowsPerPartition.isPresent()) {
                 final SchemaBuilder.Caching cachingType = caching.get();
                 if ((cachingType == SchemaBuilder.Caching.ALL || cachingType == SchemaBuilder.Caching.NONE)) {
-                    options.add(new StringBuilder("caching")
-                            .append(OPTION_ASSIGNMENT)
-                            .append(START_SUB_OPTIONS)
-                            .append(QUOTE).append("keys").append(QUOTE)
-                            .append(VALUE_SEPARATOR)
-                            .append(caching.get().value())
-                            .append(SUB_OPTION_SEPARATOR)
-                            .append(QUOTE).append("rows_per_partition").append(QUOTE)
-                            .append(VALUE_SEPARATOR)
-                            .append(cachingRowsPerPartition.get().value())
-                            .append(END_SUB_OPTIONS)
-                            .toString());
+                    options.add("caching = {'keys' : " + caching.get().value() +
+                        ", 'rows_per_partition' : " + cachingRowsPerPartition.get().value() + "}");
                 } else {
-                    throw new IllegalStateException("Cannot use caching type : "+cachingType.name()+" with the option 'rows_per_partition'. Please use ALL or NONE as caching type ");
+                    throw new IllegalStateException("Cannot use caching type : " + cachingType.name() + " with the option 'rows_per_partition'. Please use ALL or NONE as caching type ");
                 }
             } else {
-                options.add(new StringBuilder("caching").append(OPTION_ASSIGNMENT).append(caching.get()).toString());
+                options.add("caching = " + caching.get());
             }
         }
     }
-
-    abstract String buildOptions();
 
     String build() {
         return schemaStatement.buildInternal();
@@ -592,22 +571,22 @@ public abstract class TableOptions<T extends TableOptions> {
         List<String> buildCommonOptions() {
 
             List<String> options = new ArrayList<String>();
-            options.add(new StringBuilder("'class'").append(VALUE_SEPARATOR).append(strategy.strategyClass()).toString());
+            options.add("'class' : " + strategy.strategyClass());
 
             if (enableBackgroundCompaction.isPresent()) {
-                options.add(new StringBuilder("'enabled'").append(VALUE_SEPARATOR).append(enableBackgroundCompaction.get()).toString());
+                options.add("'enabled' : " + enableBackgroundCompaction.get());
             }
 
             if (tombstoneCompactionIntervalInDay.isPresent()) {
-                options.add(new StringBuilder("'tombstone_compaction_interval'").append(VALUE_SEPARATOR).append(tombstoneCompactionIntervalInDay.get()).toString());
+                options.add("'tombstone_compaction_interval' : " + tombstoneCompactionIntervalInDay.get());
             }
 
             if (tombstoneThreshold.isPresent()) {
-                options.add(new StringBuilder("'tombstone_threshold'").append(VALUE_SEPARATOR).append(tombstoneThreshold.get()).toString());
+                options.add("'tombstone_threshold' : " + tombstoneThreshold.get());
             }
 
             if (uncheckedTombstoneCompaction.isPresent()) {
-                options.add(new StringBuilder("'unchecked_tombstone_compaction'").append(VALUE_SEPARATOR).append(uncheckedTombstoneCompaction.get()).toString());
+                options.add("'unchecked_tombstone_compaction' : " + uncheckedTombstoneCompaction.get());
             }
 
             return options;
@@ -731,29 +710,29 @@ public abstract class TableOptions<T extends TableOptions> {
                 List<String> options = new ArrayList<String>(generalOptions);
 
                 if (bucketHigh.isPresent()) {
-                    options.add(new StringBuilder("'bucket_high'").append(VALUE_SEPARATOR).append(bucketHigh.get()).toString());
+                    options.add("'bucket_high' : " + bucketHigh.get());
                 }
 
                 if (bucketLow.isPresent()) {
-                    options.add(new StringBuilder("'bucket_low'").append(VALUE_SEPARATOR).append(bucketLow.get()).toString());
+                    options.add("'bucket_low' : " + bucketLow.get());
                 }
 
                 if (coldReadsRatioToOmit.isPresent()) {
-                    options.add(new StringBuilder("'cold_reads_to_omit'").append(VALUE_SEPARATOR).append(coldReadsRatioToOmit.get()).toString());
+                    options.add("'cold_reads_to_omit' : " + coldReadsRatioToOmit.get());
                 }
 
                 if (minThreshold.isPresent()) {
-                    options.add(new StringBuilder("'min_threshold'").append(VALUE_SEPARATOR).append(minThreshold.get()).toString());
+                    options.add("'min_threshold' : " + minThreshold.get());
                 }
 
                 if (maxThreshold.isPresent()) {
-                    options.add(new StringBuilder("'max_threshold'").append(VALUE_SEPARATOR).append(maxThreshold.get()).toString());
+                    options.add("'max_threshold' : " + maxThreshold.get());
                 }
 
                 if (minSSTableSizeInBytes.isPresent()) {
-                    options.add(new StringBuilder("'min_sstable_size'").append(VALUE_SEPARATOR).append(minSSTableSizeInBytes.get()).toString());
+                    options.add("'min_sstable_size' : " + minSSTableSizeInBytes.get());
                 }
-                return new StringBuilder(START_SUB_OPTIONS).append(Joiner.on(SUB_OPTION_SEPARATOR).join(options)).append(END_SUB_OPTIONS).toString();
+                return "{" + Joiner.on(", ").join(options) + "}";
             }
         }
 
@@ -790,9 +769,9 @@ public abstract class TableOptions<T extends TableOptions> {
                 List<String> options = new ArrayList<String>(generalOptions);
 
                 if (ssTableSizeInMB.isPresent()) {
-                    options.add(new StringBuilder("'sstable_size_in_mb'").append(VALUE_SEPARATOR).append(ssTableSizeInMB.get()).toString());
+                    options.add("'sstable_size_in_mb' : " + ssTableSizeInMB.get());
                 }
-                return new StringBuilder(START_SUB_OPTIONS).append(Joiner.on(SUB_OPTION_SEPARATOR).join(options)).append(END_SUB_OPTIONS).toString();
+                return "{" + Joiner.on(", ").join(options) + "}";
             }
 
         }
@@ -904,30 +883,30 @@ public abstract class TableOptions<T extends TableOptions> {
                 List<String> options = new ArrayList<String>(generalOptions);
 
                 if (baseTimeSeconds.isPresent()) {
-                    options.add(new StringBuilder("'base_time_seconds'").append(VALUE_SEPARATOR).append(baseTimeSeconds.get()).toString());
+                    options.add("'base_time_seconds' : " + baseTimeSeconds.get());
                 }
 
                 if (maxSSTableAgeDays.isPresent()) {
-                    options.add(new StringBuilder("'max_sstable_age_days'").append(VALUE_SEPARATOR).append(maxSSTableAgeDays.get()).toString());
+                    options.add("'max_sstable_age_days' : " + maxSSTableAgeDays.get());
                 }
 
                 if (minThreshold.isPresent()) {
-                    options.add(new StringBuilder("'min_threshold'").append(VALUE_SEPARATOR).append(minThreshold.get()).toString());
+                    options.add("'min_threshold' : " + minThreshold.get());
                 }
 
                 if (maxThreshold.isPresent()) {
-                    options.add(new StringBuilder("'max_threshold'").append(VALUE_SEPARATOR).append(maxThreshold.get()).toString());
+                    options.add("'max_threshold' : " + maxThreshold.get());
                 }
 
                 if (minSSTableSizeInBytes.isPresent()) {
-                    options.add(new StringBuilder("'min_sstable_size'").append(VALUE_SEPARATOR).append(minSSTableSizeInBytes.get()).toString());
+                    options.add("'min_sstable_size' : " + minSSTableSizeInBytes.get());
                 }
 
                 if (timestampResolution.isPresent()) {
-                    options.add(new StringBuilder("'timestamp_resolution'").append(VALUE_SEPARATOR).append("'").append(timestampResolution.get()).append("'").toString());
+                    options.add("'timestamp_resolution' : '" + timestampResolution.get() + "'");
                 }
 
-                return new StringBuilder(START_SUB_OPTIONS).append(Joiner.on(SUB_OPTION_SEPARATOR).join(options)).append(END_SUB_OPTIONS).toString();
+                return "{" + Joiner.on(", ").join(options) + "}";
             }
         }
 
@@ -1012,16 +991,16 @@ public abstract class TableOptions<T extends TableOptions> {
 
         public String build() {
             List<String> options = new ArrayList<String>();
-            options.add(new StringBuilder("'sstable_compression'").append(VALUE_SEPARATOR).append(algorithm.value()).toString());
+            options.add("'sstable_compression' : " + algorithm.value());
 
             if (chunkLengthInKb.isPresent()) {
-                options.add(new StringBuilder("'chunk_length_kb'").append(VALUE_SEPARATOR).append(chunkLengthInKb.get()).toString());
+                options.add("'chunk_length_kb' : " + chunkLengthInKb.get());
             }
 
             if (crcCheckChance.isPresent()) {
-                options.add(new StringBuilder("'crc_check_chance'").append(VALUE_SEPARATOR).append(crcCheckChance.get()).toString());
+                options.add("'crc_check_chance' : " + crcCheckChance.get());
             }
-            return new StringBuilder().append(START_SUB_OPTIONS).append(Joiner.on(SUB_OPTION_SEPARATOR).join(options)).append(END_SUB_OPTIONS).toString();
+            return "{" + Joiner.on(", ").join(options) + "}";
         }
 
         /**

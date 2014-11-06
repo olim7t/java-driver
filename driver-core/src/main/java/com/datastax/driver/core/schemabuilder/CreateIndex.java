@@ -101,31 +101,30 @@ public class CreateIndex extends SchemaStatement {
 
     @Override
     String buildInternal() {
-        StringBuilder createStatement = new StringBuilder(NEW_LINE).append(TAB).append(CREATE_INDEX).append(SPACE);
+        StringBuilder createStatement = new StringBuilder(STATEMENT_START).append("CREATE INDEX ");
 
         if (ifNotExists) {
-            createStatement.append(IF_NOT_EXISTS).append(SPACE);
+            createStatement.append("IF NOT EXISTS ");
         }
 
-        createStatement.append(indexName).append(SPACE).append(ON).append(SPACE);
+        createStatement.append(indexName).append(" ON ");
 
         if (keyspaceName.isPresent()) {
-            createStatement.append(keyspaceName.get()).append(DOT);
+            createStatement.append(keyspaceName.get()).append(".");
         }
         createStatement.append(tableName);
 
-        createStatement.append(OPEN_PAREN);
+        createStatement.append("(");
         if (keys) {
-            createStatement.append(KEYS);
-            createStatement.append(OPEN_PAREN);
+            createStatement.append("KEYS(");
         }
 
         createStatement.append(columnName);
 
         if (keys) {
-            createStatement.append(CLOSE_PAREN);
+            createStatement.append(")");
         }
-        createStatement.append(CLOSE_PAREN);
+        createStatement.append(")");
 
         return createStatement.toString();
     }

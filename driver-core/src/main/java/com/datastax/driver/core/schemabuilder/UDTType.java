@@ -33,33 +33,33 @@ public final class UDTType implements ColumnType {
         return asCQLString;
     }
 
-    static com.datastax.driver.core.schemabuilder.UDTType frozen(String udtName) {
+    static UDTType frozen(String udtName) {
         SchemaStatement.validateNotEmpty(udtName, "UDT name");
-        return new com.datastax.driver.core.schemabuilder.UDTType(SchemaStatement.FROZEN + SchemaStatement.OPEN_TYPE + udtName + SchemaStatement.CLOSE_TYPE);
+        return new UDTType("frozen<" + udtName + ">");
     }
 
-    static com.datastax.driver.core.schemabuilder.UDTType list(com.datastax.driver.core.schemabuilder.UDTType elementType) {
-        return new com.datastax.driver.core.schemabuilder.UDTType(SchemaStatement.LIST + SchemaStatement.OPEN_TYPE + elementType.asCQLString() + SchemaStatement.CLOSE_TYPE);
+    static UDTType list(UDTType elementType) {
+        return new UDTType("list<" + elementType.asCQLString() + ">");
     }
 
-    static com.datastax.driver.core.schemabuilder.UDTType set(com.datastax.driver.core.schemabuilder.UDTType elementType) {
-        return new com.datastax.driver.core.schemabuilder.UDTType(SchemaStatement.SET + SchemaStatement.OPEN_TYPE + elementType.asCQLString() + SchemaStatement.CLOSE_TYPE);
+    static UDTType set(UDTType elementType) {
+        return new UDTType("set<" + elementType.asCQLString() + ">");
     }
 
-    static com.datastax.driver.core.schemabuilder.UDTType mapWithUDTKey(com.datastax.driver.core.schemabuilder.UDTType keyType, DataType valueType) {
-        return new com.datastax.driver.core.schemabuilder.UDTType(SchemaStatement.MAP + SchemaStatement.OPEN_TYPE + keyType.asCQLString() + SchemaStatement.SEPARATOR + valueType + SchemaStatement.CLOSE_TYPE);
+    static UDTType mapWithUDTKey(UDTType keyType, DataType valueType) {
+        return new UDTType("map<" + keyType.asCQLString() + ", " + valueType + ">");
     }
 
-    static com.datastax.driver.core.schemabuilder.UDTType mapWithUDTValue(DataType keyType, com.datastax.driver.core.schemabuilder.UDTType valueType) {
-        return new com.datastax.driver.core.schemabuilder.UDTType(SchemaStatement.MAP + SchemaStatement.OPEN_TYPE + keyType + SchemaStatement.SEPARATOR + valueType.asCQLString() + SchemaStatement.CLOSE_TYPE);
+    static UDTType mapWithUDTValue(DataType keyType, UDTType valueType) {
+        return new UDTType("map<" + keyType + ", " + valueType.asCQLString() + ">");
     }
 
-    static com.datastax.driver.core.schemabuilder.UDTType mapWithUDTKeyAndValue(com.datastax.driver.core.schemabuilder.UDTType keyType, com.datastax.driver.core.schemabuilder.UDTType valueType) {
-        return new com.datastax.driver.core.schemabuilder.UDTType(SchemaStatement.MAP + SchemaStatement.OPEN_TYPE + keyType.asCQLString() + SchemaStatement.SEPARATOR + valueType.asCQLString() + SchemaStatement.CLOSE_TYPE);
+    static UDTType mapWithUDTKeyAndValue(UDTType keyType, UDTType valueType) {
+        return new UDTType("map<" + keyType.asCQLString() + ", " + valueType.asCQLString() + ">");
     }
 
-    static com.datastax.driver.core.schemabuilder.UDTType literal(String literal) {
+    static UDTType literal(String literal) {
         SchemaStatement.validateNotEmpty(literal, "UDT type literal");
-        return new com.datastax.driver.core.schemabuilder.UDTType(literal);
+        return new UDTType(literal);
     }
 }

@@ -62,24 +62,23 @@ public class CreateType extends AbstractCreateStatement<CreateType> {
     @Override
     String buildInternal() {
 
-        StringBuilder createStatement = new StringBuilder(NEW_LINE).append(TAB).append(CREATE_TYPE);
+        StringBuilder createStatement = new StringBuilder(STATEMENT_START).append("CREATE TYPE ");
         if (ifNotExists) {
-            createStatement.append(SPACE).append(IF_NOT_EXISTS);
+            createStatement.append("IF NOT EXISTS ");
         }
-        createStatement.append(SPACE);
         if (keyspaceName.isPresent()) {
-            createStatement.append(keyspaceName.get()).append(DOT);
+            createStatement.append(keyspaceName.get()).append(".");
         }
         createStatement.append(typeName);
 
         List<String> allColumns = new ArrayList<String>();
         for (Map.Entry<String, ColumnType> entry : simpleColumns.entrySet()) {
-            allColumns.add(buildColumnType(entry).toString());
+            allColumns.add(buildColumnType(entry));
         }
 
-        createStatement.append(OPEN_PAREN).append(NEW_LINE).append(TAB).append(TAB);
-        createStatement.append(Joiner.on(COLUMN_FORMATTING).join(allColumns));
-        createStatement.append(CLOSE_PAREN);
+        createStatement.append("(").append(COLUMN_FORMATTING);
+        createStatement.append(Joiner.on("," + COLUMN_FORMATTING).join(allColumns));
+        createStatement.append(")");
 
         return createStatement.toString();
     }

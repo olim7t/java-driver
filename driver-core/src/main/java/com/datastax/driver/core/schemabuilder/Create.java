@@ -284,25 +284,6 @@ public class Create extends AbstractCreateStatement<Create> {
         }
 
 
-        @Override
-        String buildOptions() {
-            final List<String> commonOptions = super.buildCommonOptions();
-            List<String> options = new ArrayList<String>(commonOptions);
-
-            if (!clusteringOrderKeys.isEmpty()) {
-                options.add(new StringBuilder(CLUSTERING_ORDER_BY).append(OPEN_PAREN).append(Joiner.on(SUB_OPTION_SEPARATOR).join(clusteringOrderKeys)).append(CLOSE_PAREN).toString());
-            }
-
-            if (compactStorage) {
-                if (!create.staticColumns.isEmpty()) {
-                    throw new IllegalStateException(String.format("Cannot create table '%s' with compact storage and static columns '%s'", create.tableName, create.staticColumns.keySet()));
-                }
-                options.add(COMPACT_STORAGE);
-            }
-
-            return new StringBuilder(NEW_LINE).append(TAB).append(WITH).append(SPACE).append(Joiner.on(OPTION_SEPARATOR).join(options)).toString();
-        }
-
         /**
          * Generate the final CREATE TABLE statement <strong>with</strong> table options
          *
@@ -310,9 +291,25 @@ public class Create extends AbstractCreateStatement<Create> {
          */
         @Override
         public String build() {
-            StringBuilder statement = new StringBuilder(super.build());
-            statement.append(this.buildOptions());
-            return statement.toString();
+            return super.build() + this.buildOptions();
+        }
+
+        private String buildOptions() {
+            final List<String> commonOptions = super.buildCommonOptions();
+            List<String> options = new ArrayList<String>(commonOptions);
+
+            if (!clusteringOrderKeys.isEmpty()) {
+                options.add("CLUSTERING ORDER BY(" + Joiner.on(", ").join(clusteringOrderKeys) + ")");
+            }
+
+            if (compactStorage) {
+                if (!create.staticColumns.isEmpty()) {
+                    throw new IllegalStateException(String.format("Cannot create table '%s' with compact storage and static columns '%s'", create.tableName, create.staticColumns.keySet()));
+                }
+                options.add("COMPACT STORAGE");
+            }
+
+            return STATEMENT_START + "WITH " + Joiner.on(" AND ").join(options);
         }
     }
 
@@ -324,13 +321,13 @@ public class Create extends AbstractCreateStatement<Create> {
 
         validateColumnsDeclaration();
 
-        StringBuilder createStatement = new StringBuilder(NEW_LINE).append(TAB).append(CREATE_TABLE);
+        StringBuilder createStatement = new StringBuilder(STATEMENT_START).append("CREATE TABLE");
         if (ifNotExists) {
-            createStatement.append(SPACE).append(IF_NOT_EXISTS);
+            createStatement.append(" IF NOT EXISTS");
         }
-        createStatement.append(SPACE);
+        createStatement.append(" ");
         if (keyspaceName.isPresent()) {
-            createStatement.append(keyspaceName.get()).append(DOT);
+            createStatement.append(keyspaceName.get()).append(".");
         }
         createStatement.append(tableName);
 
@@ -340,17 +337,17 @@ public class Create extends AbstractCreateStatement<Create> {
 
 
         for (Entry<String, ColumnType> entry : partitionColumns.entrySet()) {
-            allColumns.add(entry.getKey() + SPACE + entry.getValue().asCQLString());
+            allColumns.add(entry.getKey() + " " + entry.getValue().asCQLString());
             partitionKeyColumns.add(entry.getKey());
         }
 
         for (Entry<String, ColumnType> entry : clusteringColumns.entrySet()) {
-            allColumns.add(entry.getKey() + SPACE + entry.getValue().asCQLString());
+            allColumns.add(entry.getKey() + " " + entry.getValue().asCQLString());
             clusteringKeyColumns.add(entry.getKey());
         }
 
         for (Entry<String, ColumnType> entry : staticColumns.entrySet()) {
-            allColumns.add(entry.getKey() + SPACE + entry.getValue().asCQLString() + SPACE + STATIC);
+            allColumns.add(entry.getKey() + " " + entry.getValue().asCQLString() + " static");
         }
 
         for (Entry<String, ColumnType> entry : simpleColumns.entrySet()) {
@@ -359,17 +356,17 @@ public class Create extends AbstractCreateStatement<Create> {
 
         String partitionKeyPart = partitionKeyColumns.size() == 1 ?
                 partitionKeyColumns.get(0)
-                : OPEN_PAREN + Joiner.on(SEPARATOR).join(partitionKeyColumns) + CLOSE_PAREN;
+                : "(" + Joiner.on(", ").join(partitionKeyColumns) + ")";
 
         String primaryKeyPart = clusteringKeyColumns.size() == 0 ?
                 partitionKeyPart
-                : partitionKeyPart + SEPARATOR + Joiner.on(SEPARATOR).join(clusteringKeyColumns);
+                : partitionKeyPart + ", " + Joiner.on(", ").join(clusteringKeyColumns);
 
-        createStatement.append(OPEN_PAREN).append(NEW_LINE).append(TAB).append(TAB);
-        createStatement.append(Joiner.on(COLUMN_FORMATTING).join(allColumns));
-        createStatement.append(COLUMN_FORMATTING).append(PRIMARY_KEY);
-        createStatement.append(OPEN_PAREN).append(primaryKeyPart).append(CLOSE_PAREN);
-        createStatement.append(CLOSE_PAREN);
+        createStatement.append("(").append(COLUMN_FORMATTING);
+        createStatement.append(Joiner.on("," + COLUMN_FORMATTING).join(allColumns));
+        createStatement.append("," + COLUMN_FORMATTING).append("PRIMARY KEY");
+        createStatement.append("(").append(primaryKeyPart).append(")");
+        createStatement.append(")");
 
         return createStatement.toString();
     }
