@@ -15,23 +15,18 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
+import java.util.*;
+
 import static java.util.Map.Entry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import com.datastax.driver.core.DataType;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
+import com.datastax.driver.core.DataType;
+
 /**
- * A built CREATE TABLE statement
+ * A built CREATE TABLE statement.
  */
 public class Create extends AbstractCreateStatement<Create> {
 
@@ -60,14 +55,15 @@ public class Create extends AbstractCreateStatement<Create> {
         return this;
     }
 
-
     /**
-     * Adds a columnName and dataType for a partition key.
+     * Add a partition key column definition to this CREATE TABLE statement.
      * <p>
-     * Please note that partition keys are added in the order of their declaration;
+     * This includes the column declaration (you don't need an additional {@code addColumn} call).
+     * <p>
+     * Partition key columns are added in the order of their declaration.
      *
-     * @param columnName the name of the partition key to be added;
-     * @param dataType the data type of the partition key to be added.
+     * @param columnName the name of the partition key column to be added.
+     * @param dataType the data type of the partition key column to be added.
      * @return this CREATE statement.
      */
     public Create addPartitionKey(String columnName, DataType dataType) {
@@ -79,12 +75,14 @@ public class Create extends AbstractCreateStatement<Create> {
     }
 
     /**
-     * Adds a columnName and dataType for a partition key, when the type is a frozen UDT.
+     * Add a partition key column definition to this CREATE TABLE statement, when its type contains a UDT.
      * <p>
-     * Please note that partition keys are added in the order of their declaration;
+     * This includes the column declaration (you don't need an additional {@code addColumn} call).
+     * <p>
+     * Partition key columns are added in the order of their declaration.
      *
-     * @param columnName the name of the clustering key to be added;
-     * @param udtType the UDT type of the partition key to be added.
+     * @param columnName the name of the partition key column to be added.
+     * @param udtType the UDT type of the partition key column to be added. Use {@link SchemaBuilder#frozen(String)} or {@link SchemaBuilder#udtLiteral(String)}.
      * @return this CREATE statement.
      */
     public Create addUDTPartitionKey(String columnName, UDTType udtType) {
@@ -96,12 +94,14 @@ public class Create extends AbstractCreateStatement<Create> {
     }
 
     /**
-     * Adds a columnName and dataType for a clustering key.
+     * Add a clustering key column definition to this CREATE TABLE statement.
      * <p>
-     * Please note that clustering keys are added in the order of their declaration;
+     * This includes the column declaration (you don't need an additional {@code addColumn} call).
+     * <p>
+     * Clustering key columns are added in the order of their declaration.
      *
-     * @param columnName the name of the clustering key to be added;
-     * @param dataType the data type of the clustering key to be added.
+     * @param columnName the name of the clustering key column to be added.
+     * @param dataType the data type of the clustering key column to be added.
      * @return this CREATE statement.
      */
     public Create addClusteringKey(String columnName, DataType dataType) {
@@ -113,12 +113,14 @@ public class Create extends AbstractCreateStatement<Create> {
     }
 
     /**
-     * Adds a columnName and UDT type for a clustering key.
+     * Add a clustering key column definition to this CREATE TABLE statement, when its type contains a UDT.
+     * <p>
+     * This includes the column declaration (you don't need an additional {@code addColumn} call).
      * <p>
      * Please note that clustering keys are added in the order of their declaration;
      *
-     * @param columnName the name of the clustering key to be added;
-     * @param udtType the UDT type of the clustering key to be added.
+     * @param columnName the name of the clustering key to be added.
+     * @param udtType the UDT type of the clustering key to be added. Use {@link SchemaBuilder#frozen(String)} or {@link SchemaBuilder#udtLiteral(String)}.
      * @return this CREATE statement.
      */
     public Create addUDTClusteringKey(String columnName, UDTType udtType) {
@@ -130,9 +132,9 @@ public class Create extends AbstractCreateStatement<Create> {
     }
 
     /**
-     * Adds a <strong>static</strong> columnName and dataType for a simple column.
+     * Add a static column definition to this CREATE TABLE statement.
      *
-     * @param columnName the name of the <strong>static</strong> column to be added;
+     * @param columnName the name of the column to be added.
      * @param dataType the data type of the column to be added.
      * @return this CREATE statement.
      */
@@ -145,10 +147,10 @@ public class Create extends AbstractCreateStatement<Create> {
     }
 
     /**
-     * Adds a <strong>static</strong> columnName and UDT type for a simple column.
+     * Add a static column definition to this CREATE TABLE statement, when its type contains a UDT.
      *
-     * @param columnName the name of the <strong>static</strong> column to be added;
-     * @param udtType the UDT type of the column to be added.
+     * @param columnName the name of the column to be added.
+     * @param udtType the UDT type of the column to be added. Use {@link SchemaBuilder#frozen(String)} or {@link SchemaBuilder#udtLiteral(String)}.
      * @return this CREATE statement.
      */
     public Create addUDTStaticColumn(String columnName, UDTType udtType) {
@@ -160,7 +162,7 @@ public class Create extends AbstractCreateStatement<Create> {
     }
 
     /**
-     * Adds options for this CREATE TABLE statement.
+     * Add options for this CREATE TABLE statement.
      *
      * @return the options of this CREATE TABLE statement.
      */
@@ -185,11 +187,11 @@ public class Create extends AbstractCreateStatement<Create> {
         private boolean compactStorage;
 
         /**
-         * Adds a clustering order for this table.
+         * Add a clustering order for this table.
          *
-         * @param clusteringOrders the columns defining the order (use {@link SchemaBuilder#clusteringOrder(String, com.datastax.driver.core.schemabuilder.SchemaBuilder.Direction)} to create instances).
+         * @param clusteringOrders the columns and directions specifying the order (use {@link SchemaBuilder#clusteringOrder(String, SchemaBuilder.Direction)}).
          *                         They will be added in their declaration order.
-         * @return this {@code Options} object
+         * @return this {@code Options} object.
          */
         public Options clusteringOrder(ClusteringOrder... clusteringOrders) {
             if (clusteringOrders == null || clusteringOrders.length == 0) {
@@ -206,52 +208,30 @@ public class Create extends AbstractCreateStatement<Create> {
         }
 
         /**
-         * Enables the compact storage option for the table.
+         * Enable the compact storage option for the table.
          *
-         * @return this {@code Options} object
+         * @return this {@code Options} object.
          */
         public Options compactStorage() {
             this.compactStorage = true;
             return this;
         }
 
-
         /**
-         * Defines a clustering order
+         * Defines a clustering order.
          */
         public static class ClusteringOrder {
-            private String clusteringColumnName;
-            private SchemaBuilder.Direction direction = SchemaBuilder.Direction.ASC;
+            private final String clusteringColumnName;
+            private final SchemaBuilder.Direction direction;
 
-
-            /**
-             * Create a new clustering ordering with colummName/order
-             *
-             * @param clusteringColumnName the clustering column.
-             * @param direction the {@link com.datastax.driver.core.schemabuilder.SchemaBuilder.Direction}. Possible values are: ASC, DESC.
-             */
-            public ClusteringOrder(String clusteringColumnName, SchemaBuilder.Direction direction) {
+            ClusteringOrder(String clusteringColumnName, SchemaBuilder.Direction direction) {
                 validateNotEmpty(clusteringColumnName, "Column name for clustering order");
                 this.clusteringColumnName = clusteringColumnName;
                 this.direction = direction;
             }
 
-            /**
-             * Create a new clustering ordering with colummName and default ASC sorting order
-             *
-             * @param clusteringColumnName the clustering column.
-             */
-            public ClusteringOrder(String clusteringColumnName) {
-                validateNotEmpty(clusteringColumnName, "Column name for clustering order");
-                this.clusteringColumnName = clusteringColumnName;
-            }
-
             public String getClusteringColumnName() {
                 return clusteringColumnName;
-            }
-
-            public SchemaBuilder.Direction getDirection() {
-                return direction;
             }
 
             public String toStatement() {
@@ -269,7 +249,7 @@ public class Create extends AbstractCreateStatement<Create> {
                     return true;
                 }
                 if (o instanceof ClusteringOrder) {
-                    ClusteringOrder that = (ClusteringOrder) o;
+                    ClusteringOrder that = (ClusteringOrder)o;
                     return Objects.equal(this.clusteringColumnName, that.clusteringColumnName) && Objects.equal(this.direction, that.direction);
                 }
                 return false;
@@ -281,11 +261,10 @@ public class Create extends AbstractCreateStatement<Create> {
             }
         }
 
-
         /**
-         * Generate the final CREATE TABLE statement <strong>with</strong> table options
+         * Generate the final CREATE TABLE statement <strong>with</strong> table options.
          *
-         * @return the final CREATE TABLE statement <strong>with</strong> table options
+         * @return the final CREATE TABLE statement <strong>with</strong> table options.
          */
         @Override
         public String build() {
@@ -311,8 +290,7 @@ public class Create extends AbstractCreateStatement<Create> {
         }
     }
 
-    @Override
-    String buildInternal() {
+    @Override String buildInternal() {
         if (partitionColumns.size() < 1) {
             throw new IllegalStateException(String.format("There should be at least one partition key defined for the table '%s'", tableName));
         }
@@ -333,7 +311,6 @@ public class Create extends AbstractCreateStatement<Create> {
         List<String> partitionKeyColumns = new ArrayList<String>();
         List<String> clusteringKeyColumns = new ArrayList<String>();
 
-
         for (Entry<String, ColumnType> entry : partitionColumns.entrySet()) {
             allColumns.add(entry.getKey() + " " + entry.getValue().asCQLString());
             partitionKeyColumns.add(entry.getKey());
@@ -353,12 +330,12 @@ public class Create extends AbstractCreateStatement<Create> {
         }
 
         String partitionKeyPart = partitionKeyColumns.size() == 1 ?
-                partitionKeyColumns.get(0)
-                : "(" + Joiner.on(", ").join(partitionKeyColumns) + ")";
+            partitionKeyColumns.get(0)
+            : "(" + Joiner.on(", ").join(partitionKeyColumns) + ")";
 
         String primaryKeyPart = clusteringKeyColumns.size() == 0 ?
-                partitionKeyPart
-                : partitionKeyPart + ", " + Joiner.on(", ").join(clusteringKeyColumns);
+            partitionKeyPart
+            : partitionKeyPart + ", " + Joiner.on(", ").join(clusteringKeyColumns);
 
         createStatement.append("(").append(COLUMN_FORMATTING);
         createStatement.append(Joiner.on("," + COLUMN_FORMATTING).join(allColumns));
@@ -419,7 +396,7 @@ public class Create extends AbstractCreateStatement<Create> {
         Set<T> set = new HashSet<T>();
 
         for (T t : col1) {
-            if(col2.contains(t)) {
+            if (col2.contains(t)) {
                 set.add(t);
             }
         }

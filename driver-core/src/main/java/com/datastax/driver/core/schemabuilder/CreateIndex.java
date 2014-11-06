@@ -17,6 +17,9 @@ package com.datastax.driver.core.schemabuilder;
 
 import com.google.common.base.Optional;
 
+/**
+ * A built CREATE INDEX statement.
+ */
 public class CreateIndex extends SchemaStatement {
 
     private String indexName;
@@ -26,7 +29,6 @@ public class CreateIndex extends SchemaStatement {
     private String columnName;
     private boolean keys;
 
-
     CreateIndex(String indexName) {
         validateNotEmpty(indexName, "Index name");
         validateNotKeyWord(indexName, String.format("The index name '%s' is not allowed because it is a reserved keyword", indexName));
@@ -34,7 +36,7 @@ public class CreateIndex extends SchemaStatement {
     }
 
     /**
-     * Use 'IF NOT EXISTS' CAS condition for the index creation.
+     * Add the 'IF NOT EXISTS' condition to this CREATE INDEX statement.
      *
      * @return this CREATE INDEX statement.
      */
@@ -44,10 +46,11 @@ public class CreateIndex extends SchemaStatement {
     }
 
     /**
-     * Create index on the given keyspace and table
-     * @param keyspaceName
-     * @param tableName
-     * @return this CREATE INDEX statement
+     * Specify the keyspace and table to create the index on.
+     *
+     * @param keyspaceName the keyspace name.
+     * @param tableName the table name.
+     * @return a {@link CreateIndexOn} that will allow the specification of the column.
      */
     public CreateIndexOn onTable(String keyspaceName, String tableName) {
         validateNotEmpty(keyspaceName, "Keyspace name");
@@ -60,9 +63,10 @@ public class CreateIndex extends SchemaStatement {
     }
 
     /**
-     * Create index on the given table
-     * @param tableName
-     * @return this CREATE INDEX statement
+     * Specify the table to create the index on.
+     *
+     * @param tableName the table name.
+     * @return a {@link CreateIndexOn} that will allow the specification of the column.
      */
     public CreateIndexOn onTable(String tableName) {
         validateNotEmpty(tableName, "Table name");
@@ -73,9 +77,10 @@ public class CreateIndex extends SchemaStatement {
 
     public class CreateIndexOn {
         /**
-         * Create index on the given column
-         * @param columnName
-         * @return the final CREATE INDEX statement
+         * Specify the column to create the index on.
+         *
+         * @param columnName the column name.
+         * @return the final CREATE INDEX statement.
          */
         public String andColumn(String columnName) {
             validateNotEmpty(columnName, "Column name");
@@ -86,8 +91,8 @@ public class CreateIndex extends SchemaStatement {
 
         /**
          * Create an index on the keys of the given map column.
-         * @param columnName
-         * @return the final CREATE INDEX statement
+         * @param columnName the column name.
+         * @return the final CREATE INDEX statement.
          */
         public String andKeysOfColumn(String columnName) {
             validateNotEmpty(columnName, "Column name");
@@ -98,9 +103,7 @@ public class CreateIndex extends SchemaStatement {
         }
     }
 
-
-    @Override
-    String buildInternal() {
+    @Override String buildInternal() {
         StringBuilder createStatement = new StringBuilder(STATEMENT_START).append("CREATE INDEX ");
 
         if (ifNotExists) {

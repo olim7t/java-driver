@@ -17,24 +17,20 @@ package com.datastax.driver.core.schemabuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
 /**
- * Table options
+ * The table options used in a CREATE TABLE or ALTER TABLE statement.
  * <p>
- *     This class is abstract and not meant to use directly.
- *     <br/>
- *     Concrete implementations are {@link com.datastax.driver.core.schemabuilder.Create.Options} and {@link com.datastax.driver.core.schemabuilder.Alter.Options}
- * </p>
- * <p>
- *     The &lt;T&gt; parameter type is here to allow the usage of <strong>covariant return type</strong> and makes the builder pattern work for different sub-classes
- * </p>
- * <p>
- *     @see <a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/tabProp.html" target="_blank">details on table options</a>
- * </p>
+ * Implementation notes: this class is abstract and not meant to use directly.
+ * The type parameter {@code T} allows usage of <strong>covariant return type</strong> and makes the builder pattern work for different sub-classes.
+ *
  * @param <T> the concrete sub-class of {@link com.datastax.driver.core.schemabuilder.TableOptions}
+ *
+ * @see <a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/tabProp.html" target="_blank">details on table options</a>
  */
 public abstract class TableOptions<T extends TableOptions> {
 
@@ -75,19 +71,18 @@ public abstract class TableOptions<T extends TableOptions> {
 
     protected T self;
 
-    @SuppressWarnings("unchecked")
-    TableOptions(SchemaStatement schemaStatement) {
+    @SuppressWarnings("unchecked") TableOptions(SchemaStatement schemaStatement) {
         this.schemaStatement = schemaStatement;
         this.self = (T)this;
     }
 
     /**
-     * Define the caching type for Cassandra 2.0.x
+     * Define the caching type for Cassandra 2.0.x.
      * <p>
-     *     Default caching type = KEYS_ONLY
-     * </p>
-     * @param caching caching type. Available values are NONE, ALL, KEYS_ONLY & ROWS_ONLY
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is {@link SchemaBuilder.Caching#KEYS_ONLY}.
+     *
+     * @param caching the caching type (all enum values are allowed).
+     * @return this {@code TableOptions} object.
      */
     public T caching(SchemaBuilder.Caching caching) {
         this.caching = Optional.fromNullable(caching);
@@ -95,10 +90,11 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Define the caching options for Cassandra 2.1.x
+     * Define the caching options for Cassandra 2.1.x.
      * <p>
-     *     Defaults:  keys = ALL, rows_per_partition = NONE
-     * </p>
+     * If no call is made to this method, the default values set by Cassandra are keys = {@link SchemaBuilder.Caching#ALL} and
+     * rows_per_partition = {@link com.datastax.driver.core.schemabuilder.SchemaBuilder#noRows()}.
+
      * @param keys the key cache type
      *             (allowed values: {@link SchemaBuilder.Caching#NONE} or {@link SchemaBuilder.Caching#ALL}).
      * @param rowsPerPartition defines the number of rows to be cached per partition when Row Caching is enabled.
@@ -106,7 +102,7 @@ public abstract class TableOptions<T extends TableOptions> {
      *                         {@link SchemaBuilder#noRows()},
      *                         {@link SchemaBuilder#allRows()} or
      *                         {@link SchemaBuilder#rows(int)}.
-     * @return this table options
+     * @return this {@code TableOptions} object.
      */
     public T caching(SchemaBuilder.Caching keys, CachingRowsPerPartition rowsPerPartition) {
         this.caching = Optional.fromNullable(keys);
@@ -115,12 +111,16 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Desired false-positive probability for SSTable Bloom filters
+     * Define the desired false-positive probability for SSTable Bloom filters.
      * <p>
-     *     If not set, for SizeTiered strategy, default = <strong>0.01</strong>, for Leveled strategy, default = <strong>0.1</strong>
-     * </p>
-     * @param fpChance the false positive change. This value should be between 0 and 1.0
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is:
+     * <ul>
+     *     <li><strong>0.01</strong> for the size-tiered compaction strategy;</li>
+     *     <li><strong>0.1</strong> for the leveled compaction strategy.</li>
+     * </ul>
+     *
+     * @param fpChance the false positive change. This value should be between 0 and 1.0.
+     * @return this {@code TableOptions} object.
      */
     public T bloomFilterFPChance(Double fpChance) {
         validateRateValue(fpChance, "Bloom filter false positive change");
@@ -129,9 +129,10 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * A human readable comment describing the table
-     * @param comment comment for the table
-     * @return this table options
+     * Define a human readable comment describing the table.
+     *
+     * @param comment the comment.
+     * @return this {@code TableOptions} object.
      */
     public T comment(String comment) {
         this.comment = Optional.fromNullable(comment);
@@ -139,13 +140,16 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Define the compression options
+     * Define the compression options.
+     * <p>
+     * If no call is made to this method, the default value set by Cassandra is {@link SchemaBuilder#lz4()}.
+     *
      * @param compressionOptions the compression options. To create instances, use
      *                           {@link SchemaBuilder#noCompression()},
      *                           {@link SchemaBuilder#lz4()},
      *                           {@link SchemaBuilder#snappy()} or
      *                           {@link SchemaBuilder#deflate()}.
-     * @return this table options
+     * @return this {@code TableOptions} object.
      */
     public T compressionOptions(CompressionOptions compressionOptions) {
         this.compressionOptions = Optional.fromNullable(compressionOptions);
@@ -153,12 +157,15 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Define the compaction options
+     * Define the compaction options.
+     * <p>
+     * If no call is made to this method, the default value set by Cassandra is {@link SchemaBuilder#sizedTieredStategy()}.
+     *
      * @param compactionOptions the compaction options. To create instances, use
      *                          {@link SchemaBuilder#sizedTieredStategy()},
      *                          {@link SchemaBuilder#leveledStrategy()} or
      *                          {@link SchemaBuilder#dateTieredStrategy()}
-     * @return this table options
+     * @return this {@code TableOptions} object.
      */
     public T compactionOptions(CompactionOptions compactionOptions) {
         this.compactionOptions = Optional.fromNullable(compactionOptions);
@@ -166,12 +173,12 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Specifies the probability of read repairs being invoked over all replicas in the current data center
+     * Define the probability of read repairs being invoked over all replicas in the current data center.
      * <p>
-     *     If not set, default to 0.0
-     * </p>
-     * @param dcLocalReadRepairChance local Data Center read repair change
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is 0.0.
+     *
+     * @param dcLocalReadRepairChance the probability.
+     * @return this {@code TableOptions} object.
      */
     public T dcLocalReadRepairChance(Double dcLocalReadRepairChance) {
         validateRateValue(dcLocalReadRepairChance, "DC local read repair chance");
@@ -179,14 +186,16 @@ public abstract class TableOptions<T extends TableOptions> {
         return self;
     }
 
-
     /**
-     * The default expiration time in seconds for a table. Used in MapReduce/Hive scenarios when you have no control of TTL
+     * Define the default expiration time in seconds for a table.
+     *
      * <p>
-     *     If not set, default =0
-     * </p>
-     * @param defaultTimeToLive default time to live in seconds for a table
-     * @return this table options
+     * Used in MapReduce/Hive scenarios when you have no control of TTL.
+     * <p>
+     * If no call is made to this method, the default value set by Cassandra is 0.
+     *
+     * @param defaultTimeToLive the default time to live in seconds for a table.
+     * @return this {@code TableOptions} object.
      */
     public T defaultTimeToLive(Integer defaultTimeToLive) {
         this.defaultTTL = Optional.fromNullable(defaultTimeToLive);
@@ -194,14 +203,15 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Specifies the time to wait before garbage collecting tombstones (deletion markers).
+     * Define the time to wait before garbage collecting tombstones (deletion markers).
+     *
      * The default value allows a great deal of time for consistency to be achieved prior to deletion.
-     * In many deployments this interval can be reduced, and in a single-node cluster it can be safely set to zero
+     * In many deployments this interval can be reduced, and in a single-node cluster it can be safely set to zero.
      * <p>
-     *     If not set, default = 864000 secs (10 days)
-     * </p>
-     * @param gcGraceSeconds GC grace seconds
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is 864000 secs (10 days).
+     *
+     * @param gcGraceSeconds the grace period.
+     * @return this {@code TableOptions} object.
      */
     public T gcGraceSeconds(Long gcGraceSeconds) {
         this.gcGraceSeconds = Optional.fromNullable(gcGraceSeconds);
@@ -209,24 +219,20 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * The index_interval (Cassandra 2.0) property controls the sampling of entries from the primary row index,
-     * configure sample frequency of the partition summary by changing the index interval.
-     * After changing the index interval, SSTables are written to disk with new information.
+     * Define the index interval for Cassandra 2.0.
      *
-     * The interval corresponds to the number of index entries that are skipped between taking each sample.
-     * By default Cassandra samples one row key out of every 128.
-     * The larger the interval, the smaller and less effective the sampling.
-     * The larger the sampling, the more effective the index, but with increased memory usage.
-     * In Cassandra 2.0.x, generally, the best trade off between memory usage and performance is a value between
-     * 128 and 512 in combination with a large table key cache.
-     * However, if you have small rows (many to an OS page), you may want to increase the sample size,
-     * which often lowers memory usage without an impact on performance.
-     * For large rows, decreasing the sample size may improve read performance.
+     * To control the sampling of entries from the primary row index, configure sample frequency of the partition summary by changing the index interval.
+     * After changing the index interval, SSTables are written to disk with new information. The interval corresponds to the number of index entries that
+     * are skipped between taking each sample. By default, Cassandra samples one row key out of every 128. The larger the interval, the smaller and less
+     * effective the sampling. The larger the sampling, the more effective the index, but with increased memory usage. In Cassandra 2.0.x, generally, the
+     * best trade off between memory usage and performance is a value between 128 and 512 in combination with a large table key cache. However, if you have
+     * small rows (many to an OS page), you may want to increase the sample size, which often lowers memory usage without an impact on performance. For
+     * large rows, decreasing the sample size may improve read performance.
      * <p>
-     *     If not set, default = 128
-     * </p>
-     * @param indexInterval index interval
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is 128.
+     *
+     * @param indexInterval the index interval.
+     * @return this {@code TableOptions} object.
      */
     public T indexInterval(Integer indexInterval) {
         this.indexInterval = Optional.fromNullable(indexInterval);
@@ -234,24 +240,14 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * The min_index_interval and max_index_interval (Cassandra 2.1) properties control the sampling of entries from the primary row index,
-     * configure sample frequency of the partition summary by changing the index interval.
-     * After changing the index interval, SSTables are written to disk with new information.
-     *
-     * The interval corresponds to the number of index entries that are skipped between taking each sample.
-     * By default Cassandra samples one row key out of every 128.
-     * The larger the interval, the smaller and less effective the sampling.
-     * The larger the sampling, the more effective the index, but with increased memory usage.
-     * In Cassandra 2.0.x, generally, the best trade off between memory usage and performance is a value between
-     * 128 and 512 in combination with a large table key cache.
-     * However, if you have small rows (many to an OS page), you may want to increase the sample size,
-     * which often lowers memory usage without an impact on performance.
-     * For large rows, decreasing the sample size may improve read performance.
+     * Define the minimum index interval for Cassandra 2.1.
      * <p>
-     *     If not set, default = 128
-     * </p>
-     * @param minIndexInterval index interval
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is 128.
+     *
+     * @param minIndexInterval the minimum index interval.
+     * @return this {@code TableOptions} object.
+     *
+     * @see #indexInterval(Integer)
      */
     public T minIndexInterval(Integer minIndexInterval) {
         this.minIndexInterval = Optional.fromNullable(minIndexInterval);
@@ -259,24 +255,14 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * The min_index_interval and max_index_interval (Cassandra 2.1) properties control the sampling of entries from the primary row index,
-     * configure sample frequency of the partition summary by changing the index interval.
-     * After changing the index interval, SSTables are written to disk with new information.
-     *
-     * The interval corresponds to the number of index entries that are skipped between taking each sample.
-     * By default Cassandra samples one row key out of every 128.
-     * The larger the interval, the smaller and less effective the sampling.
-     * The larger the sampling, the more effective the index, but with increased memory usage.
-     * In Cassandra 2.0.x, generally, the best trade off between memory usage and performance is a value between
-     * 128 and 512 in combination with a large table key cache.
-     * However, if you have small rows (many to an OS page), you may want to increase the sample size,
-     * which often lowers memory usage without an impact on performance.
-     * For large rows, decreasing the sample size may improve read performance.
+     * Define the maximum index interval for Cassandra 2.1.
      * <p>
-     *     If not set, default = 2048
-     * </p>
-     * @param maxIndexInterval index interval
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is 2048.
+     *
+     * @param maxIndexInterval the maximum index interval.
+     * @return this {@code TableOptions} object.
+     *
+     * @see #indexInterval(Integer)
      */
     public T maxIndexInterval(Integer maxIndexInterval) {
         this.maxIndexInterval = Optional.fromNullable(maxIndexInterval);
@@ -284,12 +270,14 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Forces flushing of the memtable after the specified time in milliseconds elapses
+     * Define the memtable flush period.
+     *
+     * If set, this forces flushing of the memtable after the specified time elapses.
      * <p>
-     *     If not set, default = 0
-     * </p>
-     * @param memtableFlushPeriodInMillis memtable flush period in milli seconds
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is 0.
+     *
+     * @param memtableFlushPeriodInMillis the memtable flush period in milliseconds.
+     * @return this {@code TableOptions} object.
      */
     public T memtableFlushPeriodInMillis(Long memtableFlushPeriodInMillis) {
         this.memtableFlushPeriodInMillis = Optional.fromNullable(memtableFlushPeriodInMillis);
@@ -297,12 +285,17 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Adds newly flushed or compacted sstables to the operating system page cache, potentially evicting other cached data to make room.
-     * Enable when all data in the table is expected to fit in memory.
+     * Define whether to populate IO cache on flush of sstables.
      *
-     * See also the global option <a href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/configuration/configCassandra_yaml_r.html?scroll=reference_ds_qfg_n1r_1k__compaction_preheat_key_cache">compaction_preheat_key_cache</a>
-     * @param populateIOOnCacheFlush whether populate IO cache on flush of sstables
-     * @return this table options
+     * If set, Cassandra adds newly flushed or compacted sstables to the operating system page cache, potentially evicting other cached data to make room.
+     * Enable when all data in the table is expected to fit in memory.
+     * <p>
+     * If no call is made to this method, the default value set by Cassandra is {@code false}.
+     *
+     * @param populateIOOnCacheFlush whether to populate IO cache on flush of sstables.
+     * @return this {@code TableOptions} object.
+     *
+     * @see <a href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/configuration/configCassandra_yaml_r.html?scroll=reference_ds_qfg_n1r_1k__compaction_preheat_key_cache">the global option compaction_preheat_key_cache</a>
      */
     public T populateIOCacheOnFlush(Boolean populateIOOnCacheFlush) {
         this.populateIOOnCacheFlush = Optional.fromNullable(populateIOOnCacheFlush);
@@ -310,12 +303,12 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Specifies the probability with which read repairs should be invoked on non-quorum reads. The value must be between 0 and 1.
+     * Define the probability with which read repairs should be invoked on non-quorum reads. The value must be between 0 and 1.
      * <p>
-     *     If not set, default = 0.1
-     * </p>
-     * @param readRepairChance read repair chance
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is 0.1.
+     *
+     * @param readRepairChance the read repair chance.
+     * @return this {@code TableOptions} object.
      */
     public T readRepairChance(Double readRepairChance) {
         validateRateValue(readRepairChance, "Read repair chance");
@@ -323,16 +316,16 @@ public abstract class TableOptions<T extends TableOptions> {
         return self;
     }
 
-
     /**
-     * Applies only to counter tables.
-     * When set to true, replicates writes to all affected replicas regardless of the consistency level specified by the client for a write request.
-     * For counter tables, this should always be set to true
+     * Define whether to replicate data on write (Cassandra 2.0.x only).
+     *
+     * When set to {@code true}, replicates writes to all affected replicas regardless of the consistency level specified by the client for a write request.
+     * For counter tables, this should always be set to {@code true}.
      * <p>
-     *     If not set, default = true
-     * </p>
-     * @param replicateOnWrite whether replicate data on write
-     * @return this table options
+     * If no call is made to this method, the default value set by Cassandra is {@code true}.
+     *
+     * @param replicateOnWrite whether to replicate data on write.
+     * @return this {@code TableOptions} object.
      */
     public T replicateOnWrite(Boolean replicateOnWrite) {
         this.replicateOnWrite = Optional.fromNullable(replicateOnWrite);
@@ -361,7 +354,7 @@ public abstract class TableOptions<T extends TableOptions> {
      *                         {@link SchemaBuilder#always()},
      *                         {@link SchemaBuilder#percentile(int)} or
      *                         {@link SchemaBuilder#millisecs(int)}.
-     * @return this table options
+     * @return this {@code TableOptions} object.
      */
     public T speculativeRetry(SpeculativeRetryValue speculativeRetry) {
         this.speculativeRetry = Optional.fromNullable(speculativeRetry);
@@ -369,14 +362,14 @@ public abstract class TableOptions<T extends TableOptions> {
     }
 
     /**
-     * Input a free-form option as key/value pair.
+     * Define a free-form option as a key/value pair.
      * <p>
      * This method is provided as a fallback if the SchemaBuilder is used with a more recent version of Cassandra that has new, unsupported options.
      *
      * @param key the name of the option.
-     * @param value its value. If it's a {@code String}, it will be included in single quotes, otherwise the result of invoking its {@code toString}
-     *              method will be used unquoted.
-     * @return this table options.
+     * @param value the value of the option. If it's a {@code String}, it will be included in single quotes, otherwise the result of invoking its
+     *              {@code toString} method will be used unquoted.
+     * @return this {@code TableOptions} object.
      */
     public T freeformOption(String key, Object value) {
         if (Strings.isNullOrEmpty(key)) {
@@ -507,8 +500,7 @@ public abstract class TableOptions<T extends TableOptions> {
 
         private T self;
 
-        @SuppressWarnings("unchecked")
-        CompactionOptions(Strategy compactionStrategy) {
+        @SuppressWarnings("unchecked") CompactionOptions(Strategy compactionStrategy) {
             this.strategy = compactionStrategy;
             self = (T)this;
         }
@@ -570,7 +562,6 @@ public abstract class TableOptions<T extends TableOptions> {
             this.uncheckedTombstoneCompaction = Optional.fromNullable(uncheckedTombstoneCompaction);
             return self;
         }
-
 
         List<String> buildCommonOptions() {
 
@@ -785,7 +776,7 @@ public abstract class TableOptions<T extends TableOptions> {
          */
         public static class DateTieredCompactionStrategyOptions extends CompactionOptions<DateTieredCompactionStrategyOptions> {
 
-            enum TimeStampResolution { MICROSECONDS, MILLISECONDS }
+            enum TimeStampResolution {MICROSECONDS, MILLISECONDS}
 
             private Optional<Integer> baseTimeSeconds;
 
@@ -880,7 +871,6 @@ public abstract class TableOptions<T extends TableOptions> {
                 return this;
             }
 
-
             @Override public String build() {
                 final List<String> generalOptions = super.buildCommonOptions();
 
@@ -954,7 +944,6 @@ public abstract class TableOptions<T extends TableOptions> {
         private Optional<Integer> chunkLengthInKb = Optional.absent();
 
         private Optional<Double> crcCheckChance = Optional.absent();
-
 
         CompressionOptions(Algorithm algorithm) {
             this.algorithm = algorithm;

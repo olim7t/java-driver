@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.driver.core.DataType;
 
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.createType;
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.frozen;
 import static com.datastax.driver.core.schemabuilder.SchemaBuilder.udtLiteral;
 
@@ -31,133 +31,126 @@ public class CreateTypeTest {
     public void should_create_UDT() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addColumn("col2", DataType.bigint())
-                .build();
+            .addColumn("col1", DataType.text())
+            .addColumn("col2", DataType.bigint())
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "col2 bigint)");
+            "col1 text,\n\t\t" +
+            "col2 bigint)");
     }
 
     @Test(groups = "unit")
     public void should_create_UDT_if_not_exists() throws Exception {
         //When
         final String built = createType("myType")
-                .ifNotExists()
-                .addColumn("col1", DataType.text())
-                .addColumn("col2", DataType.bigint())
-                .build();
+            .ifNotExists()
+            .addColumn("col1", DataType.text())
+            .addColumn("col2", DataType.bigint())
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE IF NOT EXISTS myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "col2 bigint)");
+            "col1 text,\n\t\t" +
+            "col2 bigint)");
     }
 
     @Test(groups = "unit")
     public void should_create_simple_UDT_column() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addUDTColumn("my_udt", frozen("address"))
-                .build();
-
+            .addColumn("col1", DataType.text())
+            .addUDTColumn("my_udt", frozen("address"))
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "my_udt frozen<address>)");
+            "col1 text,\n\t\t" +
+            "my_udt frozen<address>)");
     }
 
     @Test(groups = "unit")
     public void should_create_list_UDT_column() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addUDTListColumn("my_udt", frozen("address"))
-                .build();
-
+            .addColumn("col1", DataType.text())
+            .addUDTListColumn("my_udt", frozen("address"))
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "my_udt list<frozen<address>>)");
+            "col1 text,\n\t\t" +
+            "my_udt list<frozen<address>>)");
     }
 
     @Test(groups = "unit")
     public void should_create_set_UDT_column() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addUDTSetColumn("my_udt", frozen("address"))
-                .build();
-
+            .addColumn("col1", DataType.text())
+            .addUDTSetColumn("my_udt", frozen("address"))
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "my_udt set<frozen<address>>)");
+            "col1 text,\n\t\t" +
+            "my_udt set<frozen<address>>)");
     }
 
     @Test(groups = "unit")
     public void should_create_key_UDT_map_column() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addUDTMapColumn("my_udt", frozen("address"), DataType.text())
-                .build();
-
+            .addColumn("col1", DataType.text())
+            .addUDTMapColumn("my_udt", frozen("address"), DataType.text())
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "my_udt map<frozen<address>, text>)");
+            "col1 text,\n\t\t" +
+            "my_udt map<frozen<address>, text>)");
     }
 
     @Test(groups = "unit")
     public void should_create_value_UDT_map_column() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addUDTMapColumn("my_udt", DataType.cint(), frozen("address"))
-                .build();
-
+            .addColumn("col1", DataType.text())
+            .addUDTMapColumn("my_udt", DataType.cint(), frozen("address"))
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "my_udt map<int, frozen<address>>)");
+            "col1 text,\n\t\t" +
+            "my_udt map<int, frozen<address>>)");
     }
 
     @Test(groups = "unit")
     public void should_create_key_value_UDT_map_column() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addUDTMapColumn("my_udt", frozen("coords"), frozen("address"))
-                .build();
-
+            .addColumn("col1", DataType.text())
+            .addUDTMapColumn("my_udt", frozen("coords"), frozen("address"))
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "my_udt map<frozen<coords>, frozen<address>>)");
+            "col1 text,\n\t\t" +
+            "my_udt map<frozen<coords>, frozen<address>>)");
     }
 
     @Test(groups = "unit")
     public void should_create_column_with_manual_type() throws Exception {
         //When
         final String built = createType("ks", "myType")
-                .addColumn("col1", DataType.text())
-                .addUDTColumn("my_udt", udtLiteral("frozen<address>"))
-                .build();
-
+            .addColumn("col1", DataType.text())
+            .addUDTColumn("my_udt", udtLiteral("frozen<address>"))
+            .build();
 
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TYPE ks.myType(\n\t\t" +
-                "col1 text,\n\t\t" +
-                "my_udt frozen<address>)");
+            "col1 text,\n\t\t" +
+            "my_udt frozen<address>)");
     }
 }

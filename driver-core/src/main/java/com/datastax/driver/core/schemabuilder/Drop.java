@@ -18,11 +18,11 @@ package com.datastax.driver.core.schemabuilder;
 import com.google.common.base.Optional;
 
 /**
- * A built DROP TABLE statement
+ * A built DROP statement.
  */
 public class Drop extends SchemaStatement {
 
-    enum DroppedItem { TABLE, TYPE, INDEX }
+    enum DroppedItem {TABLE, TYPE, INDEX}
 
     private Optional<String> keyspaceName = Optional.absent();
     private String itemName;
@@ -34,7 +34,7 @@ public class Drop extends SchemaStatement {
         validateNotEmpty(keyspaceName, "Keyspace name");
         validateNotEmpty(itemName, this.itemType.toLowerCase() + " name");
         validateNotKeyWord(keyspaceName, String.format("The keyspace name '%s' is not allowed because it is a reserved keyword", keyspaceName));
-        validateNotKeyWord(itemName,String.format("The " + this.itemType.toLowerCase() + " name '%s' is not allowed because it is a reserved keyword",itemName));
+        validateNotKeyWord(itemName, String.format("The " + this.itemType.toLowerCase() + " name '%s' is not allowed because it is a reserved keyword", itemName));
         this.itemName = itemName;
         this.keyspaceName = Optional.fromNullable(keyspaceName);
     }
@@ -42,22 +42,21 @@ public class Drop extends SchemaStatement {
     Drop(String itemName, DroppedItem itemType) {
         this.itemType = itemType.name();
         validateNotEmpty(itemName, this.itemType.toLowerCase() + " name");
-        validateNotKeyWord(itemName,String.format("The " + this.itemType.toLowerCase() + " name '%s' is not allowed because it is a reserved keyword", itemName));
+        validateNotKeyWord(itemName, String.format("The " + this.itemType.toLowerCase() + " name '%s' is not allowed because it is a reserved keyword", itemName));
         this.itemName = itemName;
     }
 
     /**
-     * Use 'IF EXISTS' CAS condition for the table drop.
+     * Add the 'IF EXISTS' condition to this DROP statement.
      *
-     * @return a new {@link Drop} instance.
+     * @return this statement.
      */
     public Drop ifExists() {
         this.ifExists = true;
         return this;
     }
 
-    @Override
-    String buildInternal() {
+    @Override String buildInternal() {
         StringBuilder dropStatement = new StringBuilder("DROP " + itemType + " ");
         if (ifExists) {
             dropStatement.append("IF EXISTS ");

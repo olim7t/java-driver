@@ -15,10 +15,11 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.Test;
 
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.createIndex;
 
 public class CreateIndexTest {
 
@@ -39,6 +40,5 @@ public class CreateIndexTest {
         //Then
         assertThat(statement).isEqualTo("\n\tCREATE INDEX IF NOT EXISTS myIndex ON ks.test(KEYS(col))");
     }
-
 
 }

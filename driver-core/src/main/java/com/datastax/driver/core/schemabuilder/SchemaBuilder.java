@@ -18,19 +18,20 @@ package com.datastax.driver.core.schemabuilder;
 import static com.datastax.driver.core.schemabuilder.Drop.DroppedItem;
 
 /**
- * Static methods to build a CQL3 DML statement.
+ * Static methods to build a CQL3 DDL statement.
  * <p>
- * Available DML statements: CREATE/ALTER/DROP
+ * The provided builders perform very little validation of the built query.
+ * There is thus no guarantee that a built query is valid, and it is
+ * definitively possible to create invalid queries.
  * <p>
  * Note that it could be convenient to use an 'import static' to use the methods of this class.
  */
 public final class SchemaBuilder {
 
-    private SchemaBuilder() {
-    }
+    private SchemaBuilder() {}
 
     /**
-     * Start building a new CREATE TABLE statement
+     * Start building a new CREATE TABLE statement.
      *
      * @param tableName the name of the table to create.
      * @return an in-construction CREATE TABLE statement.
@@ -40,7 +41,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new CREATE TABLE statement
+     * Start building a new CREATE TABLE statement.
      *
      * @param keyspaceName the name of the keyspace to be used.
      * @param tableName the name of the table to create.
@@ -51,7 +52,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new ALTER TABLE statement
+     * Start building a new ALTER TABLE statement.
      *
      * @param tableName the name of the table to be altered.
      * @return an in-construction ALTER TABLE statement.
@@ -61,7 +62,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new ALTER TABLE statement
+     * Start building a new ALTER TABLE statement.
      *
      * @param keyspaceName the name of the keyspace to be used.
      * @param tableName the name of the table to be altered.
@@ -72,7 +73,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new DROP TABLE statement
+     * Start building a new DROP TABLE statement.
      *
      * @param tableName the name of the table to be dropped.
      * @return an in-construction DROP TABLE statement.
@@ -82,7 +83,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new DROP TABLE statement
+     * Start building a new DROP TABLE statement.
      *
      * @param keyspaceName the name of the keyspace to be used.
      * @param tableName the name of the table to be dropped.
@@ -93,7 +94,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new CREATE INDEX statement
+     * Start building a new CREATE INDEX statement.
      *
      * @param indexName the name of the table to create.
      * @return an in-construction CREATE INDEX statement.
@@ -103,7 +104,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new DROP INDEX statement
+     * Start building a new DROP INDEX statement.
      *
      * @param indexName the name of the index to be dropped.
      * @return an in-construction DROP INDEX statement.
@@ -113,7 +114,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new DROP INDEX statement
+     * Start building a new DROP INDEX statement.
      *
      * @param keyspaceName the name of the keyspace to be used.
      * @param indexName the name of the index to be dropped.
@@ -124,18 +125,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Defines a clustering order for a CREATE TABLE statement.
-     *
-     * @param clusteringColumnName the clustering column name.
-     * @param clusteringOrder the clustering order (DESC/ASC).
-     * @return the clustering order.
-     */
-    public static Create.Options.ClusteringOrder clusteringOrder(String clusteringColumnName, Direction clusteringOrder) {
-        return new Create.Options.ClusteringOrder(clusteringColumnName, clusteringOrder);
-    }
-
-    /**
-     * Start building a new CREATE TYPE statement
+     * Start building a new CREATE TYPE statement.
      *
      * @param typeName the name of the custom type to create.
      * @return an in-construction CREATE TYPE statement.
@@ -145,7 +135,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new CREATE TYPE statement
+     * Start building a new CREATE TYPE statement.
      *
      * @param keyspaceName the name of the keyspace to be used.
      * @param typeName the name of the custom type to create.
@@ -156,7 +146,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new DROP TYPE statement
+     * Start building a new DROP TYPE statement.
      *
      * @param typeName the name of the type to be dropped.
      * @return an in-construction DROP TYPE statement.
@@ -166,7 +156,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Start building a new DROP TYPE statement
+     * Start building a new DROP TYPE statement.
      *
      * @param keyspaceName the name of the keyspace to be used.
      * @param typeName the name of the type to be dropped.
@@ -177,7 +167,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Builds the datatype representation of a frozen UDT, to include in a schema builder statement.
+     * Build the datatype representation of a frozen UDT, to include in a schema builder statement.
      * <p>
      * <code>frozen("foo")</code> will produce <code>frozen&lt;foo&gt;</code>.
      *
@@ -189,21 +179,33 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Builds the datatype representation of a complex UDT type, to include in a schema builder statement.
+     * Build the datatype representation of a complex UDT type, to include in a schema builder statement.
      * <p>
      * As of Cassandra 2.1, this method is not strictly necessary because {@link Create} and {@link Alter}
      * provide specialized methods to express simple collections of UDTs, but future versions will make it
      * possible to use types such as <code>map&lt;text, map&lt;text, frozen&lt;user&gt;&gt;&gt;</code>.
      *
      * @param literal the type literal as it will appear in the final CQL statement.
-     * @return the type
+     * @return the type.
      */
     public static UDTType udtLiteral(String literal) {
         return UDTType.literal(literal);
     }
 
     /**
-     * Creates options for the size-tiered compaction strategy, for use in a CREATE or ALTER TABLE statement.
+     * Define a clustering order for a CREATE TABLE statement.
+     *
+     * @param columnName the clustering column name.
+     * @param direction the clustering direction (DESC/ASC).
+     * @return the clustering order.
+     */
+    public static Create.Options.ClusteringOrder clusteringOrder(String columnName, Direction direction) {
+        return new Create.Options.ClusteringOrder(columnName, direction);
+    }
+
+    /**
+     * Create options for the size-tiered compaction strategy, for use in a CREATE or ALTER TABLE statement.
+     *
      * @return the options.
      */
     public static TableOptions.CompactionOptions.SizeTieredCompactionStrategyOptions sizedTieredStategy() {
@@ -211,7 +213,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates options for the leveled compaction strategy, to use in a CREATE or ALTER TABLE statement.
+     * Create options for the leveled compaction strategy, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the options.
      */
     public static TableOptions.CompactionOptions.LeveledCompactionStrategyOptions leveledStrategy() {
@@ -219,7 +222,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates options for the date-tiered compaction strategy, to use in a CREATE or ALTER TABLE statement.
+     * Create options for the date-tiered compaction strategy, to use in a CREATE or ALTER TABLE statement.
      * <p>
      * This strategy was introduced in Cassandra 2.1.1.
      *
@@ -230,7 +233,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates options for the no compression strategy, to use in a CREATE or ALTER TABLE statement.
+     * Create options for the {@code NONE} compression strategy, to use in a CREATE or ALTER TABLE statement.
      *
      * @return the options.
      */
@@ -239,7 +242,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates options for the LZ4 compression strategy, to use in a CREATE or ALTER TABLE statement.
+     * Create options for the LZ4 compression strategy, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the options.
      */
     public static TableOptions.CompressionOptions lz4() {
@@ -247,7 +251,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates options for the Snappy compression strategy, to use in a CREATE or ALTER TABLE statement.
+     * Create options for the Snappy compression strategy, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the options.
      */
     public static TableOptions.CompressionOptions snappy() {
@@ -255,7 +260,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates options for the Deflate compression strategy, to use in a CREATE or ALTER TABLE statement.
+     * Create options for the Deflate compression strategy, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the options.
      */
     public static TableOptions.CompressionOptions deflate() {
@@ -263,7 +269,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates the speculative retry strategy that never retries reads, to use in a CREATE or ALTER TABLE statement.
+     * Create the speculative retry strategy that never retries reads, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the strategy.
      */
     public static TableOptions.SpeculativeRetryValue noSpeculativeRetry() {
@@ -271,7 +278,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates the speculative retry strategy that retries reads of all replicas, to use in a CREATE or ALTER TABLE statement.
+     * Create the speculative retry strategy that retries reads of all replicas, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the strategy.
      */
     public static TableOptions.SpeculativeRetryValue always() {
@@ -279,8 +287,9 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates the speculative retry strategy that retries based on the effect on throughput and latency,
+     * Create the speculative retry strategy that retries based on the effect on throughput and latency,
      * to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the strategy.
      */
     public static TableOptions.SpeculativeRetryValue percentile(int percentile) {
@@ -291,7 +300,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Creates the speculative retry strategy that retries after a given delay, to use in a CREATE or ALTER TABLE statement.
+     * Create the speculative retry strategy that retries after a given delay, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the strategy.
      */
     public static TableOptions.SpeculativeRetryValue millisecs(int millisecs) {
@@ -309,7 +319,7 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Defines caching strategies, for use in a CREATE or ALTER TABLE statement.
+     * Caching strategies, for use in a CREATE or ALTER TABLE statement.
      */
     public static enum Caching {
         ALL("'all'"), KEYS_ONLY("'keys_only'"), ROWS_ONLY("'rows_only'"), NONE("'none'");
@@ -331,7 +341,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Returns the row caching strategy that never caches rows, to use in a CREATE or ALTER TABLE statement.
+     * Return the row caching strategy that never caches rows ({@code NONE}, to use in a CREATE or ALTER TABLE statement.
+     *
      * @return the strategy.
      */
     public static TableOptions.CachingRowsPerPartition noRows() {
@@ -339,9 +350,10 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Returns the row caching strategy that caches all rows, to use in a CREATE or ALTER TABLE statement.
+     * Return the row caching strategy that caches all rows ({@code ALL}), to use in a CREATE or ALTER TABLE statement.
      * <p>
      * <strong>Be careful when choosing this option, you can starve Cassandra memory quickly if your partition is very large.</strong>
+     *
      * @return the strategy.
      */
     public static TableOptions.CachingRowsPerPartition allRows() {
@@ -349,7 +361,8 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Returns the row caching strategy that caches a given number of rows, to use in a CREATE or ALTER TABLE statement.
+     * Return the row caching strategy that caches a given number of rows, to use in a CREATE or ALTER TABLE statement.
+     *
      * @param rowNumber the number of rows to cache.
      * @return the strategy.
      */

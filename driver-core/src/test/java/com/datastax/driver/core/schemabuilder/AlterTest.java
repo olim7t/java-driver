@@ -15,15 +15,15 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.driver.core.DataType;
-import org.testng.annotations.Test;
+
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
 
 public class AlterTest {
-
 
     @Test(groups = "unit")
     public void should_alter_column_type() throws Exception {
@@ -94,23 +94,23 @@ public class AlterTest {
         // Note that this does not necessarily represent a valid configuration, the goal is just to test all options
         // (some of which might be specific to C* 2.0 or 2.1)
         final String built = alterTable("test").withOptions()
-                .bloomFilterFPChance(0.01)
-                .caching(Caching.ROWS_ONLY)
-                .comment("This is a comment")
-                .compactionOptions(leveledStrategy().ssTableSizeInMB(160))
-                .compressionOptions(lz4())
-                .dcLocalReadRepairChance(0.21)
-                .defaultTimeToLive(100)
-                .gcGraceSeconds(9999L)
-                .indexInterval(256)
-                .minIndexInterval(64)
-                .maxIndexInterval(512)
-                .memtableFlushPeriodInMillis(12L)
-                .populateIOCacheOnFlush(true)
-                .replicateOnWrite(true)
-                .readRepairChance(0.42)
-                .speculativeRetry(always())
-                .build();
+            .bloomFilterFPChance(0.01)
+            .caching(Caching.ROWS_ONLY)
+            .comment("This is a comment")
+            .compactionOptions(leveledStrategy().ssTableSizeInMB(160))
+            .compressionOptions(lz4())
+            .dcLocalReadRepairChance(0.21)
+            .defaultTimeToLive(100)
+            .gcGraceSeconds(9999L)
+            .indexInterval(256)
+            .minIndexInterval(64)
+            .maxIndexInterval(512)
+            .memtableFlushPeriodInMillis(12L)
+            .populateIOCacheOnFlush(true)
+            .replicateOnWrite(true)
+            .readRepairChance(0.42)
+            .speculativeRetry(always())
+            .build();
 
         final String builtWith21Caching = alterTable("test").withOptions()
             .caching(Caching.NONE, rows(100))
@@ -118,74 +118,74 @@ public class AlterTest {
 
         //Then
         assertThat(built).isEqualTo("\n\tALTER TABLE test " +
-                "WITH caching = 'rows_only' " +
-                "AND bloom_filter_fp_chance = 0.01 " +
-                "AND comment = 'This is a comment' " +
-                "AND compression = {'sstable_compression' : 'LZ4Compressor'} " +
-                "AND compaction = {'class' : 'LeveledCompactionStrategy', 'sstable_size_in_mb' : 160} " +
-                "AND dclocal_read_repair_chance = 0.21 " +
-                "AND default_time_to_live = 100 " +
-                "AND gc_grace_seconds = 9999 " +
-                "AND index_interval = 256 " +
-                "AND min_index_interval = 64 " +
-                "AND max_index_interval = 512 " +
-                "AND memtable_flush_period_in_ms = 12 " +
-                "AND populate_io_cache_on_flush = true " +
-                "AND read_repair_chance = 0.42 " +
-                "AND replicate_on_write = true " +
-                "AND speculative_retry = 'ALWAYS'");
+            "WITH caching = 'rows_only' " +
+            "AND bloom_filter_fp_chance = 0.01 " +
+            "AND comment = 'This is a comment' " +
+            "AND compression = {'sstable_compression' : 'LZ4Compressor'} " +
+            "AND compaction = {'class' : 'LeveledCompactionStrategy', 'sstable_size_in_mb' : 160} " +
+            "AND dclocal_read_repair_chance = 0.21 " +
+            "AND default_time_to_live = 100 " +
+            "AND gc_grace_seconds = 9999 " +
+            "AND index_interval = 256 " +
+            "AND min_index_interval = 64 " +
+            "AND max_index_interval = 512 " +
+            "AND memtable_flush_period_in_ms = 12 " +
+            "AND populate_io_cache_on_flush = true " +
+            "AND read_repair_chance = 0.42 " +
+            "AND replicate_on_write = true " +
+            "AND speculative_retry = 'ALWAYS'");
 
         assertThat(builtWith21Caching).isEqualTo("\n\tALTER TABLE test " +
-                "WITH caching = {'keys' : 'none', 'rows_per_partition' : 100}");
+            "WITH caching = {'keys' : 'none', 'rows_per_partition' : 100}");
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The keyspace name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The keyspace name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_keyspace_name_is_a_reserved_keyword() throws Exception {
         alterTable("add", "test")
-                .addColumn("test").type(DataType.ascii());
+            .addColumn("test").type(DataType.ascii());
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
         alterTable("add")
-                .addColumn("test").type(DataType.ascii());
+            .addColumn("test").type(DataType.ascii());
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The new column name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The new column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_added_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-                .addColumn("add").type(DataType.ascii());
+            .addColumn("add").type(DataType.ascii());
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The altered column name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The altered column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_altered_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-                .alterColumn("add").type(DataType.ascii());
+            .alterColumn("add").type(DataType.ascii());
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The renamed column name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The renamed column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_renamed_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-                .renameColumn("add");
+            .renameColumn("add");
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The new column name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The new column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_new_renamed_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-                .renameColumn("col").to("add");
+            .renameColumn("col").to("add");
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The dropped column name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The dropped column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_drop_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-                .dropColumn("add");
+            .dropColumn("add");
     }
 
     @Test(groups = "unit")

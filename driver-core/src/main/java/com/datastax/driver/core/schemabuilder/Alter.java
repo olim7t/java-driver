@@ -16,9 +16,11 @@
 package com.datastax.driver.core.schemabuilder;
 
 import java.util.List;
-import com.datastax.driver.core.DataType;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+
+import com.datastax.driver.core.DataType;
 
 public class Alter extends SchemaStatement {
 
@@ -29,87 +31,83 @@ public class Alter extends SchemaStatement {
         validateNotEmpty(keyspaceName, "Keyspace name");
         validateNotEmpty(tableName, "Table name");
         validateNotKeyWord(keyspaceName, String.format("The keyspace name '%s' is not allowed because it is a reserved keyword", keyspaceName));
-        validateNotKeyWord(tableName,String.format("The table name '%s' is not allowed because it is a reserved keyword",tableName));
+        validateNotKeyWord(tableName, String.format("The table name '%s' is not allowed because it is a reserved keyword", tableName));
         this.tableName = tableName;
         this.keyspaceName = Optional.fromNullable(keyspaceName);
     }
 
     Alter(String tableName) {
         validateNotEmpty(tableName, "Table name");
-        validateNotKeyWord(tableName,String.format("The table name '%s' is not allowed because it is a reserved keyword",tableName));
+        validateNotKeyWord(tableName, String.format("The table name '%s' is not allowed because it is a reserved keyword", tableName));
         this.tableName = tableName;
     }
 
     /**
-     * Alter a column
-     * <p>
-     *     Please note that you cannot rename a column that is not part of the primary key
-     * </p>
-     * @param columnName the name of the column to be altered;
+     * Add an ALTER column clause (to change the column type) to this ALTER TABLE statement.
+
+     * @param columnName the name of the column to be altered.
      * @return a new {@link Alter.AlterColumn} instance.
      */
     public AlterColumn alterColumn(String columnName) {
         validateNotEmpty(columnName, "Column to be altered");
-        validateNotKeyWord(columnName,String.format("The altered column name '%s' is not allowed because it is a reserved keyword",columnName));
+        validateNotKeyWord(columnName, String.format("The altered column name '%s' is not allowed because it is a reserved keyword", columnName));
         return new AlterColumn(this, columnName);
     }
 
     /**
-     * Add a new column
+     * Add a new ADD column clause to this ALTER TABLE statement.
      *
-     * @param columnName the name of the column to be added;
+     * @param columnName the name of the column to be added.
      * @return a new {@link Alter.AddColumn} instance.
      */
     public AddColumn addColumn(String columnName) {
         validateNotEmpty(columnName, "Added column");
-        validateNotKeyWord(columnName,String.format("The new column name '%s' is not allowed because it is a reserved keyword",columnName));
+        validateNotKeyWord(columnName, String.format("The new column name '%s' is not allowed because it is a reserved keyword", columnName));
         return new AddColumn(this, columnName, false);
     }
 
     /**
-     * Add a new static column
+     * Add a new ADD column clause to this ALTER TABLE statement, to add a static column.
      *
-     * @param columnName the name of the column to be added;
+     * @param columnName the name of the column to be added.
      * @return a new {@link Alter.AddColumn} instance.
      */
     public AddColumn addStaticColumn(String columnName) {
         validateNotEmpty(columnName, "Added static column");
-        validateNotKeyWord(columnName,String.format("The new static column name '%s' is not allowed because it is a reserved keyword",columnName));
+        validateNotKeyWord(columnName, String.format("The new static column name '%s' is not allowed because it is a reserved keyword", columnName));
         return new AddColumn(this, columnName, true);
     }
 
     /**
-     * Drop a column
+     * Add a new DROP column clause to this ALTER TABLE statement.
      * <p>
-     *     Please note that you cannot drop a column that is part of the primary key
-     * </p>
+     * Note that you cannot drop a column that is part of the primary key.
 
-     * @param columnName the name of the column to be dropped;
+     * @param columnName the name of the column to be dropped.
      * @return the final ALTER TABLE DROP COLUMN statement.
      */
     public String dropColumn(String columnName) {
         validateNotEmpty(columnName, "Column to be dropped");
-        validateNotKeyWord(columnName,String.format("The dropped column name '%s' is not allowed because it is a reserved keyword",columnName));
+        validateNotKeyWord(columnName, String.format("The dropped column name '%s' is not allowed because it is a reserved keyword", columnName));
         return this.buildInternal() + " DROP " + columnName;
     }
 
     /**
-     * Rename a column
+     * Add a new RENAME column clause to this ALTER TABLE statement.
      * <p>
-     *     Please note that you can only rename a column that is part of the primary key
-     * </p>
-
-     * @param columnName the name of the column to be renamed;
+     * Note that you can only rename a column that is part of the primary key.
+     *
+     * @param columnName the name of the column to be renamed.
      * @return a new {@link Alter.RenameColumn} instance.
      */
     public RenameColumn renameColumn(String columnName) {
         validateNotEmpty(columnName, "Column to be renamed");
-        validateNotKeyWord(columnName,String.format("The renamed column name '%s' is not allowed because it is a reserved keyword",columnName));
+        validateNotKeyWord(columnName, String.format("The renamed column name '%s' is not allowed because it is a reserved keyword", columnName));
         return new RenameColumn(this, columnName);
     }
 
     /**
-     * Alter table options
+     * Add options (WITH clause) to this ALTER TABLE statement.
      *
      * @return a new {@link Alter.Options} instance.
      */
@@ -118,7 +116,7 @@ public class Alter extends SchemaStatement {
     }
 
     /**
-     * An alter column statement
+     * An ALTER column clause.
      */
     public static class AlterColumn {
 
@@ -131,17 +129,19 @@ public class Alter extends SchemaStatement {
         }
 
         /**
-         * Define the new type of the altered column
-         * @param type the new type of the altered column
-         * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement
+         * Define the new type of the altered column.
+         *
+         * @param type the new type of the altered column.
+         * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement.
          */
         public String type(DataType type) {
             return alter.buildInternal() + " ALTER " + columnName + " TYPE " + type.toString();
         }
 
         /**
-         * Defines the new type of the altered column to a UDT type.
-         * @param udtType the UDT type.
+         * Define the new type of the altered column, when that type contains a UDT.
+         *
+         * @param udtType the UDT type. Use {@link SchemaBuilder#frozen(String)} or {@link SchemaBuilder#udtLiteral(String)}.
          * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement.
          */
         public String udtType(UDTType udtType) {
@@ -150,7 +150,7 @@ public class Alter extends SchemaStatement {
     }
 
     /**
-     * An add column statement
+     * An ADD column clause.
      */
     public static class AddColumn {
 
@@ -165,9 +165,10 @@ public class Alter extends SchemaStatement {
         }
 
         /**
-         * Define the type of the added column
-         * @param type the new type of the added column
-         * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement
+         * Define the type of the added column.
+         *
+         * @param type the type of the added column.
+         * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement.
          */
         public String type(DataType type) {
             return alter.buildInternal() + " ADD " + columnName + " " + type.toString()
@@ -175,8 +176,9 @@ public class Alter extends SchemaStatement {
         }
 
         /**
-         * Define the type of the added column to a UDT type.
-         * @param udtType the new type of the added column.
+         * Define the type of the added column, when that type contains a UDT.
+         *
+         * @param udtType the UDT type of the added column.
          * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement.
          */
         public String udtType(UDTType udtType) {
@@ -186,7 +188,7 @@ public class Alter extends SchemaStatement {
     }
 
     /**
-     * A rename column statement
+     * A RENAME column clause.
      */
     public static class RenameColumn {
 
@@ -199,13 +201,14 @@ public class Alter extends SchemaStatement {
         }
 
         /**
-         * Define the new name of the column
-         * @param newColumnName the new name of the column*
-         * @return the final <strong>ALTER TABLE RENAME {@code columnName} TO {@code newColumnName} </strong> statement
+         * Define the new name of the column.
+         *
+         * @param newColumnName the new name of the column.
+         * @return the final <strong>ALTER TABLE RENAME {@code columnName} TO {@code newColumnName} </strong> statement.
          */
         public String to(String newColumnName) {
             validateNotEmpty(newColumnName, "New column name");
-            validateNotKeyWord(newColumnName,String.format("The new column name '%s' is not allowed because it is a reserved keyword",newColumnName));
+            validateNotKeyWord(newColumnName, String.format("The new column name '%s' is not allowed because it is a reserved keyword", newColumnName));
             return alter.buildInternal() + " RENAME " + columnName + " TO " + newColumnName;
         }
     }
@@ -220,9 +223,9 @@ public class Alter extends SchemaStatement {
         }
 
         /**
-         * Generate the final ALTER TABLE statement <strong>with</strong> table options
+         * Generate the final ALTER TABLE statement <strong>with</strong> table options.
          *
-         * @return the final ALTER TABLE statement <strong>with</strong> table options
+         * @return the final ALTER TABLE statement <strong>with</strong> table options.
          */
         @Override
         public String build() {
@@ -236,8 +239,7 @@ public class Alter extends SchemaStatement {
 
     }
 
-    @Override
-    String buildInternal() {
+    @Override String buildInternal() {
         String tableSpec = keyspaceName.isPresent()
             ? keyspaceName.get() + "." + tableName
             : tableName;

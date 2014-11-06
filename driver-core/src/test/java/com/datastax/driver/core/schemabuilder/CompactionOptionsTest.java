@@ -15,10 +15,13 @@
  */
 package com.datastax.driver.core.schemabuilder;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.Test;
 
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.dateTieredStrategy;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.leveledStrategy;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.sizedTieredStategy;
 import static com.datastax.driver.core.schemabuilder.TableOptions.CompactionOptions.DateTieredCompactionStrategyOptions.TimeStampResolution;
 
 public class CompactionOptionsTest {
@@ -26,21 +29,21 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_sized_tiered_compaction_options() throws Exception {
         //When
-        final String build = sizedTieredStategy()
-                .bucketLow(0.5)
-                .bucketHigh(1.2)
-                .coldReadsRatioToOmit(0.89)
-                .enableBackgroundCompaction(true)
-                .minThreshold(2)
-                .maxThreshold(4)
-                .minSSTableSizeInBytes(5000000L)
-                .tombstoneCompactionIntervalInDay(3)
-                .tombstoneThreshold(0.7)
-                .uncheckedTombstoneCompaction(true)
-                .build();
+        final String built = sizedTieredStategy()
+            .bucketLow(0.5)
+            .bucketHigh(1.2)
+            .coldReadsRatioToOmit(0.89)
+            .enableBackgroundCompaction(true)
+            .minThreshold(2)
+            .maxThreshold(4)
+            .minSSTableSizeInBytes(5000000L)
+            .tombstoneCompactionIntervalInDay(3)
+            .tombstoneThreshold(0.7)
+            .uncheckedTombstoneCompaction(true)
+            .build();
 
         //Then
-        assertThat(build).isEqualTo("{'class' : 'SizeTieredCompactionStrategy', " +
+        assertThat(built).isEqualTo("{'class' : 'SizeTieredCompactionStrategy', " +
             "'enabled' : true, " +
             "'tombstone_compaction_interval' : 3, " +
             "'tombstone_threshold' : 0.7, " +
@@ -56,16 +59,16 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_leveled_compaction_option() throws Exception {
         //When
-        final String build = leveledStrategy()
-                .enableBackgroundCompaction(true)
-                .ssTableSizeInMB(160)
-                .tombstoneCompactionIntervalInDay(3)
-                .tombstoneThreshold(0.7)
-                .uncheckedTombstoneCompaction(true)
-                .build();
+        final String built = leveledStrategy()
+            .enableBackgroundCompaction(true)
+            .ssTableSizeInMB(160)
+            .tombstoneCompactionIntervalInDay(3)
+            .tombstoneThreshold(0.7)
+            .uncheckedTombstoneCompaction(true)
+            .build();
 
         //Then
-        assertThat(build).isEqualTo("{'class' : 'LeveledCompactionStrategy', " +
+        assertThat(built).isEqualTo("{'class' : 'LeveledCompactionStrategy', " +
             "'enabled' : true, " +
             "'tombstone_compaction_interval' : 3, " +
             "'tombstone_threshold' : 0.7, " +
@@ -76,7 +79,7 @@ public class CompactionOptionsTest {
     @Test(groups = "unit")
     public void should_create_date_tiered_compaction_option() throws Exception {
         //When
-        String build = dateTieredStrategy()
+        String built = dateTieredStrategy()
             .baseTimeSeconds(7200)
             .enableBackgroundCompaction(true)
             .maxSSTableAgeDays(400)
@@ -90,7 +93,7 @@ public class CompactionOptionsTest {
             .build();
 
         //Then
-        assertThat(build).isEqualTo("{'class' : 'DateTieredCompactionStrategy', " +
+        assertThat(built).isEqualTo("{'class' : 'DateTieredCompactionStrategy', " +
             "'enabled' : true, " +
             "'tombstone_compaction_interval' : 3, " +
             "'tombstone_threshold' : 0.7, " +
@@ -106,36 +109,36 @@ public class CompactionOptionsTest {
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ratio_out_of_range() throws Exception {
         sizedTieredStategy()
-                .bucketLow(0.5)
-                .bucketHigh(1.2)
-                .coldReadsRatioToOmit(1.89)
-                .build();
+            .bucketLow(0.5)
+            .bucketHigh(1.2)
+            .coldReadsRatioToOmit(1.89)
+            .build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_cold_read_ratio_negative() throws Exception {
         sizedTieredStategy()
-                .bucketLow(0.5)
-                .bucketHigh(1.2)
-                .coldReadsRatioToOmit(-1.0)
-                .build();
+            .bucketLow(0.5)
+            .bucketHigh(1.2)
+            .coldReadsRatioToOmit(-1.0)
+            .build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_out_of_range() throws Exception {
         sizedTieredStategy()
-                .bucketLow(0.5)
-                .bucketHigh(1.2)
-                .tombstoneThreshold(1.89)
-                .build();
+            .bucketLow(0.5)
+            .bucketHigh(1.2)
+            .tombstoneThreshold(1.89)
+            .build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_throw_exception_if_tombstone_threshold_negative() throws Exception {
         sizedTieredStategy()
-                .bucketLow(0.5)
-                .bucketHigh(1.2)
-                .coldReadsRatioToOmit(-1.0)
-                .build();
+            .bucketLow(0.5)
+            .bucketHigh(1.2)
+            .coldReadsRatioToOmit(-1.0)
+            .build();
     }
 }

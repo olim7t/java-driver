@@ -19,7 +19,9 @@ import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.*;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.dropIndex;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.dropTable;
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.dropType;
 
 public class DropTest {
 
@@ -111,7 +113,7 @@ public class DropTest {
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
-            expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
+        expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
         dropTable("add").build();
     }

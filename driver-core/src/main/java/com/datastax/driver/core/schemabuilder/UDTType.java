@@ -20,7 +20,7 @@ import com.datastax.driver.core.DataType;
 /**
  * Represents a CQL type containing a user-defined type (UDT) in a SchemaBuilder statement.
  * <p>
- * Use {@link SchemaBuilder#frozen(String)} and {@link SchemaBuilder#udtLiteral(String)} to build instances of this type.
+ * Use {@link SchemaBuilder#frozen(String)} or {@link SchemaBuilder#udtLiteral(String)} to build instances of this type.
  */
 public final class UDTType implements ColumnType {
     private final String asCQLString;
