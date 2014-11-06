@@ -73,8 +73,12 @@ public abstract class TableOptions<T extends TableOptions> {
 
     private List<RawOption> customOptions = new ArrayList<RawOption>();
 
+    protected T self;
+
+    @SuppressWarnings("unchecked")
     TableOptions(SchemaStatement schemaStatement) {
         this.schemaStatement = schemaStatement;
+        this.self = (T)this;
     }
 
     /**
@@ -87,7 +91,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T caching(SchemaBuilder.Caching caching) {
         this.caching = Optional.fromNullable(caching);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -107,7 +111,7 @@ public abstract class TableOptions<T extends TableOptions> {
     public T caching(SchemaBuilder.Caching keys, CachingRowsPerPartition rowsPerPartition) {
         this.caching = Optional.fromNullable(keys);
         this.cachingRowsPerPartition = Optional.fromNullable(rowsPerPartition);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -121,7 +125,7 @@ public abstract class TableOptions<T extends TableOptions> {
     public T bloomFilterFPChance(Double fpChance) {
         validateRateValue(fpChance, "Bloom filter false positive change");
         this.bloomFilterFPChance = Optional.fromNullable(fpChance);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -131,7 +135,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T comment(String comment) {
         this.comment = Optional.fromNullable(comment);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -145,7 +149,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T compressionOptions(CompressionOptions compressionOptions) {
         this.compressionOptions = Optional.fromNullable(compressionOptions);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -158,7 +162,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T compactionOptions(CompactionOptions compactionOptions) {
         this.compactionOptions = Optional.fromNullable(compactionOptions);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -172,7 +176,7 @@ public abstract class TableOptions<T extends TableOptions> {
     public T dcLocalReadRepairChance(Double dcLocalReadRepairChance) {
         validateRateValue(dcLocalReadRepairChance, "DC local read repair chance");
         this.dcLocalReadRepairChance = Optional.fromNullable(dcLocalReadRepairChance);
-        return (T) this;
+        return self;
     }
 
 
@@ -186,7 +190,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T defaultTimeToLive(Integer defaultTimeToLive) {
         this.defaultTTL = Optional.fromNullable(defaultTimeToLive);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -201,7 +205,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T gcGraceSeconds(Long gcGraceSeconds) {
         this.gcGraceSeconds = Optional.fromNullable(gcGraceSeconds);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -226,7 +230,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T indexInterval(Integer indexInterval) {
         this.indexInterval = Optional.fromNullable(indexInterval);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -251,7 +255,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T minIndexInterval(Integer minIndexInterval) {
         this.minIndexInterval = Optional.fromNullable(minIndexInterval);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -276,7 +280,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T maxIndexInterval(Integer maxIndexInterval) {
         this.maxIndexInterval = Optional.fromNullable(maxIndexInterval);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -289,7 +293,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T memtableFlushPeriodInMillis(Long memtableFlushPeriodInMillis) {
         this.memtableFlushPeriodInMillis = Optional.fromNullable(memtableFlushPeriodInMillis);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -302,7 +306,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T populateIOCacheOnFlush(Boolean populateIOOnCacheFlush) {
         this.populateIOOnCacheFlush = Optional.fromNullable(populateIOOnCacheFlush);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -316,7 +320,7 @@ public abstract class TableOptions<T extends TableOptions> {
     public T readRepairChance(Double readRepairChance) {
         validateRateValue(readRepairChance, "Read repair chance");
         this.readRepairChance = Optional.fromNullable(readRepairChance);
-        return (T) this;
+        return self;
     }
 
 
@@ -332,7 +336,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T replicateOnWrite(Boolean replicateOnWrite) {
         this.replicateOnWrite = Optional.fromNullable(replicateOnWrite);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -361,7 +365,7 @@ public abstract class TableOptions<T extends TableOptions> {
      */
     public T speculativeRetry(SpeculativeRetryValue speculativeRetry) {
         this.speculativeRetry = Optional.fromNullable(speculativeRetry);
-        return (T) this;
+        return self;
     }
 
     /**
@@ -379,7 +383,7 @@ public abstract class TableOptions<T extends TableOptions> {
             throw new IllegalArgumentException("Key for custom option should not be null or blank");
         }
         customOptions.add(new RawOption(key, value));
-        return (T) this;
+        return self;
     }
 
     List<String> buildCommonOptions() {
