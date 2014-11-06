@@ -30,8 +30,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting;
-
 /**
  * A built CREATE TABLE statement
  */
@@ -189,7 +187,7 @@ public class Create extends AbstractCreateStatement<Create> {
         /**
          * Adds a clustering order for this table.
          *
-         * @param clusteringOrders the columns defining the order (use {@link SchemaBuilder#clusteringOrder(String, Sorting)} to create instances).
+         * @param clusteringOrders the columns defining the order (use {@link SchemaBuilder#clusteringOrder(String, com.datastax.driver.core.schemabuilder.SchemaBuilder.Direction)} to create instances).
          *                         They will be added in their declaration order.
          * @return this {@code Options} object
          */
@@ -223,19 +221,19 @@ public class Create extends AbstractCreateStatement<Create> {
          */
         public static class ClusteringOrder {
             private String clusteringColumnName;
-            private Sorting sorting = Sorting.ASC;
+            private SchemaBuilder.Direction direction = SchemaBuilder.Direction.ASC;
 
 
             /**
              * Create a new clustering ordering with colummName/order
              *
              * @param clusteringColumnName the clustering column.
-             * @param sorting the {@link Sorting}. Possible values are: ASC, DESC.
+             * @param direction the {@link com.datastax.driver.core.schemabuilder.SchemaBuilder.Direction}. Possible values are: ASC, DESC.
              */
-            public ClusteringOrder(String clusteringColumnName, Sorting sorting) {
+            public ClusteringOrder(String clusteringColumnName, SchemaBuilder.Direction direction) {
                 validateNotEmpty(clusteringColumnName, "Column name for clustering order");
                 this.clusteringColumnName = clusteringColumnName;
-                this.sorting = sorting;
+                this.direction = direction;
             }
 
             /**
@@ -252,12 +250,12 @@ public class Create extends AbstractCreateStatement<Create> {
                 return clusteringColumnName;
             }
 
-            public Sorting getSorting() {
-                return sorting;
+            public SchemaBuilder.Direction getDirection() {
+                return direction;
             }
 
             public String toStatement() {
-                return clusteringColumnName + " " + sorting.name();
+                return clusteringColumnName + " " + direction.name();
             }
 
             @Override
@@ -272,14 +270,14 @@ public class Create extends AbstractCreateStatement<Create> {
                 }
                 if (o instanceof ClusteringOrder) {
                     ClusteringOrder that = (ClusteringOrder) o;
-                    return Objects.equal(this.clusteringColumnName, that.clusteringColumnName) && Objects.equal(this.sorting, that.sorting);
+                    return Objects.equal(this.clusteringColumnName, that.clusteringColumnName) && Objects.equal(this.direction, that.direction);
                 }
                 return false;
             }
 
             @Override
             public int hashCode() {
-                return Objects.hashCode(clusteringColumnName, sorting);
+                return Objects.hashCode(clusteringColumnName, direction);
             }
         }
 

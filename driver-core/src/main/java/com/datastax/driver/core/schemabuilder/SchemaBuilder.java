@@ -130,7 +130,7 @@ public final class SchemaBuilder {
      * @param clusteringOrder the clustering order (DESC/ASC).
      * @return the clustering order.
      */
-    public static Create.Options.ClusteringOrder clusteringOrder(String clusteringColumnName, Sorting clusteringOrder) {
+    public static Create.Options.ClusteringOrder clusteringOrder(String clusteringColumnName, Direction clusteringOrder) {
         return new Create.Options.ClusteringOrder(clusteringColumnName, clusteringOrder);
     }
 
@@ -302,9 +302,9 @@ public final class SchemaBuilder {
     }
 
     /**
-     * The sorting used in {@link #clusteringOrder(String, com.datastax.driver.core.schemabuilder.SchemaBuilder.Sorting)} declarations.
+     * The direction used in {@link #clusteringOrder(String, SchemaBuilder.Direction)} declarations.
      */
-    public static enum Sorting {
+    public static enum Direction {
         ASC, DESC
     }
 

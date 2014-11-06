@@ -249,7 +249,7 @@ public class CreateTest {
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .clusteringOrder(clusteringOrder("col1", Sorting.ASC), clusteringOrder("col2", Sorting.DESC))
+                .clusteringOrder(clusteringOrder("col1", Direction.ASC), clusteringOrder("col2", Direction.DESC))
                 .build();
         //Then
         assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -278,7 +278,7 @@ public class CreateTest {
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
-                .withOptions().clusteringOrder(clusteringOrder("", Sorting.DESC)).build();
+                .withOptions().clusteringOrder(clusteringOrder("", Direction.DESC)).build();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -288,7 +288,7 @@ public class CreateTest {
                 .addClusteringKey("col1", DataType.uuid())
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
-                .withOptions().clusteringOrder(clusteringOrder("col3", Sorting.ASC)).build();
+                .withOptions().clusteringOrder(clusteringOrder("col3", Direction.ASC)).build();
     }
 
     @Test(groups = "unit")
@@ -321,7 +321,7 @@ public class CreateTest {
                 .addClusteringKey("col2", DataType.uuid())
                 .addColumn("name", DataType.text())
                 .withOptions()
-                .clusteringOrder(clusteringOrder("col1", Sorting.ASC), clusteringOrder("col2", Sorting.DESC))
+                .clusteringOrder(clusteringOrder("col1", Direction.ASC), clusteringOrder("col2", Direction.DESC))
                 .compactStorage()
                 .bloomFilterFPChance(0.01)
                 .caching(Caching.ROWS_ONLY)
