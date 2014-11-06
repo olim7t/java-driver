@@ -26,19 +26,19 @@ public class CreateIndexTest {
     @Test(groups = "unit")
     public void should_create_index() throws Exception {
         //Given //When
-        final String statement = createIndex("myIndex").ifNotExists().onTable("ks", "test").andColumn("col");
+        SchemaStatement statement = createIndex("myIndex").ifNotExists().onTable("ks", "test").andColumn("col");
 
         //Then
-        assertThat(statement).isEqualTo("\n\tCREATE INDEX IF NOT EXISTS myIndex ON ks.test(col)");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE INDEX IF NOT EXISTS myIndex ON ks.test(col)");
     }
 
     @Test(groups = "unit")
     public void should_create_index_on_keys_of_map_column() throws Exception {
         //Given //When
-        final String statement = createIndex("myIndex").ifNotExists().onTable("ks", "test").andKeysOfColumn("col");
+        SchemaStatement statement = createIndex("myIndex").ifNotExists().onTable("ks", "test").andKeysOfColumn("col");
 
         //Then
-        assertThat(statement).isEqualTo("\n\tCREATE INDEX IF NOT EXISTS myIndex ON ks.test(KEYS(col))");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE INDEX IF NOT EXISTS myIndex ON ks.test(KEYS(col))");
     }
 
 }

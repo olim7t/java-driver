@@ -22,6 +22,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
+import static com.datastax.driver.core.schemabuilder.SchemaStatement.STATEMENT_START;
+
 /**
  * The table options used in a CREATE TABLE or ALTER TABLE statement.
  * <p>
@@ -32,9 +34,9 @@ import com.google.common.base.Strings;
  *
  * @see <a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/tabProp.html" target="_blank">details on table options</a>
  */
-public abstract class TableOptions<T extends TableOptions> {
+public abstract class TableOptions<T extends TableOptions> extends SchemaStatement {
 
-    private SchemaStatement schemaStatement;
+    private StatementStart statementStart;
 
     private Optional<SchemaBuilder.Caching> caching = Optional.absent();
     private Optional<CachingRowsPerPartition> cachingRowsPerPartition = Optional.absent();
@@ -71,8 +73,8 @@ public abstract class TableOptions<T extends TableOptions> {
 
     protected T self;
 
-    @SuppressWarnings("unchecked") TableOptions(SchemaStatement schemaStatement) {
-        this.schemaStatement = schemaStatement;
+    @SuppressWarnings("unchecked") TableOptions(StatementStart statementStart) {
+        this.statementStart = statementStart;
         this.self = (T)this;
     }
 
@@ -379,7 +381,7 @@ public abstract class TableOptions<T extends TableOptions> {
         return self;
     }
 
-    List<String> buildCommonOptions() {
+    private List<String> buildCommonOptions() {
         List<String> options = new ArrayList<String>();
 
         buildCachingOptions(options);
@@ -468,8 +470,14 @@ public abstract class TableOptions<T extends TableOptions> {
         }
     }
 
-    String build() {
-        return schemaStatement.buildInternal();
+    protected abstract void addSpecificOptions(List<String> options);
+
+    @Override
+    public final String buildInternal() {
+        List<String> options = buildCommonOptions();
+        addSpecificOptions(options);
+        return statementStart.buildInternal() + STATEMENT_START +
+            "WITH " + Joiner.on(" AND ").join(options);
     }
 
     static void validateRateValue(Double rateValue, String property) {

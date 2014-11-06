@@ -28,64 +28,64 @@ public class AlterTest {
     @Test(groups = "unit")
     public void should_alter_column_type() throws Exception {
         //When
-        final String built = alterTable("test").alterColumn("name").type(DataType.ascii());
+        SchemaStatement statement = alterTable("test").alterColumn("name").type(DataType.ascii());
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE test ALTER name TYPE ascii");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE test ALTER name TYPE ascii");
     }
 
     @Test(groups = "unit")
     public void should_alter_column_type_with_keyspace() throws Exception {
         //When
-        final String built = alterTable("ks", "test").alterColumn("name").type(DataType.ascii());
+        SchemaStatement statement = alterTable("ks", "test").alterColumn("name").type(DataType.ascii());
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE ks.test ALTER name TYPE ascii");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE ks.test ALTER name TYPE ascii");
     }
 
     @Test(groups = "unit")
     public void should_alter_column_type_to_UDT() throws Exception {
         //When
-        final String built = alterTable("ks", "test").alterColumn("address").udtType(frozen("address"));
+        SchemaStatement statement = alterTable("ks", "test").alterColumn("address").udtType(frozen("address"));
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE ks.test ALTER address TYPE frozen<address>");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE ks.test ALTER address TYPE frozen<address>");
     }
 
     @Test(groups = "unit")
     public void should_add_column() throws Exception {
         //When
-        final String built = alterTable("test").addColumn("location").type(DataType.ascii());
+        SchemaStatement statement = alterTable("test").addColumn("location").type(DataType.ascii());
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE test ADD location ascii");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE test ADD location ascii");
     }
 
     @Test(groups = "unit")
     public void should_add_column_with_UDT_type() throws Exception {
         //When
-        final String built = alterTable("test").addColumn("location").udtType(frozen("address"));
+        SchemaStatement statement = alterTable("test").addColumn("location").udtType(frozen("address"));
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE test ADD location frozen<address>");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE test ADD location frozen<address>");
     }
 
     @Test(groups = "unit")
     public void should_rename_column() throws Exception {
         //When
-        final String built = alterTable("test").renameColumn("name").to("description");
+        SchemaStatement statement = alterTable("test").renameColumn("name").to("description");
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE test RENAME name TO description");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE test RENAME name TO description");
     }
 
     @Test(groups = "unit")
     public void should_drop_column() throws Exception {
         //When
-        final String built = alterTable("test").dropColumn("name");
+        SchemaStatement statement = alterTable("test").dropColumn("name");
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE test DROP name");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE test DROP name");
     }
 
     @Test(groups = "unit")
@@ -93,7 +93,7 @@ public class AlterTest {
         //When
         // Note that this does not necessarily represent a valid configuration, the goal is just to test all options
         // (some of which might be specific to C* 2.0 or 2.1)
-        final String built = alterTable("test").withOptions()
+        SchemaStatement statement = alterTable("test").withOptions()
             .bloomFilterFPChance(0.01)
             .caching(Caching.ROWS_ONLY)
             .comment("This is a comment")
@@ -109,15 +109,13 @@ public class AlterTest {
             .populateIOCacheOnFlush(true)
             .replicateOnWrite(true)
             .readRepairChance(0.42)
-            .speculativeRetry(always())
-            .build();
+            .speculativeRetry(always());
 
-        final String builtWith21Caching = alterTable("test").withOptions()
-            .caching(Caching.NONE, rows(100))
-            .build();
+        SchemaStatement statementWith21Caching = alterTable("test").withOptions()
+            .caching(Caching.NONE, rows(100));
 
         //Then
-        assertThat(built).isEqualTo("\n\tALTER TABLE test " +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE test\n\t" +
             "WITH caching = 'rows_only' " +
             "AND bloom_filter_fp_chance = 0.01 " +
             "AND comment = 'This is a comment' " +
@@ -135,7 +133,7 @@ public class AlterTest {
             "AND replicate_on_write = true " +
             "AND speculative_retry = 'ALWAYS'");
 
-        assertThat(builtWith21Caching).isEqualTo("\n\tALTER TABLE test " +
+        assertThat(statementWith21Caching.getQueryString()).isEqualTo("\n\tALTER TABLE test\n\t" +
             "WITH caching = {'keys' : 'none', 'rows_per_partition' : 100}");
     }
 
@@ -157,14 +155,14 @@ public class AlterTest {
         expectedExceptionsMessageRegExp = "The new column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_added_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-            .addColumn("add").type(DataType.ascii());
+            .addColumn("add").type(DataType.ascii()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
         expectedExceptionsMessageRegExp = "The altered column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_altered_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-            .alterColumn("add").type(DataType.ascii());
+            .alterColumn("add").type(DataType.ascii()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
@@ -185,15 +183,15 @@ public class AlterTest {
         expectedExceptionsMessageRegExp = "The dropped column name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_drop_column_is_a_reserved_keyword() throws Exception {
         alterTable("test")
-            .dropColumn("add");
+            .dropColumn("add").getQueryString();
     }
 
     @Test(groups = "unit")
     public void should_add_static_column() throws Exception {
         //When
-        final String alterTable = alterTable("test").addStaticColumn("stat").type(DataType.text());
+        SchemaStatement statement = alterTable("test").addStaticColumn("stat").type(DataType.text());
 
         //Then
-        assertThat(alterTable).isEqualTo("\n\tALTER TABLE test ADD stat text static");
+        assertThat(statement.getQueryString()).isEqualTo("\n\tALTER TABLE test ADD stat text static");
     }
 }

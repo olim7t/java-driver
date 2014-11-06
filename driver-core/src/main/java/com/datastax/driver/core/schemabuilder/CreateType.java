@@ -57,7 +57,8 @@ public class CreateType extends AbstractCreateStatement<CreateType> {
         return this;
     }
 
-    @Override String buildInternal() {
+    @Override
+    public String buildInternal() {
 
         StringBuilder createStatement = new StringBuilder(STATEMENT_START).append("CREATE TYPE ");
         if (ifNotExists) {

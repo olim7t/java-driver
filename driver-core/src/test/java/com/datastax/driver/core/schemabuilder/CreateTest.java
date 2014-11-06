@@ -31,12 +31,12 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\t" +
             "PRIMARY KEY(id))");
@@ -45,12 +45,11 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_udt_partition_key() throws Exception {
         //When
-        final String built = createTable("test")
-            .addUDTPartitionKey("u", frozen("user"))
-            .build();
+        SchemaStatement statement = createTable("test")
+            .addUDTPartitionKey("u", frozen("user"));
 
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
                 "u frozen<user>,\n\t\t" +
                 "PRIMARY KEY(u))"
         );
@@ -58,19 +57,18 @@ public class CreateTest {
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class)
     public void should_fail_when_creating_table_without_partition_key() throws Exception {
-        createTable("test").addColumn("name", DataType.text()).build();
+        createTable("test").addColumn("name", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit")
     public void should_create_simple_table_if_not_exists() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .ifNotExists()
             .addPartitionKey("id", DataType.bigint())
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE IF NOT EXISTS test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE IF NOT EXISTS test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\t" +
             "PRIMARY KEY(id))");
@@ -79,12 +77,11 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_keyspace() throws Exception {
         //When
-        final String built = createTable("ks", "test")
+        SchemaStatement statement = createTable("ks", "test")
             .addPartitionKey("id", DataType.bigint())
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE ks.test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE ks.test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\t" +
             "PRIMARY KEY(id))");
@@ -93,12 +90,12 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_list() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
-            .addColumn("friends", DataType.list(DataType.text()))
-            .build();
+            .addColumn("friends", DataType.list(DataType.text()));
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "friends list<text>,\n\t\t" +
             "PRIMARY KEY(id))");
@@ -107,12 +104,12 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_set() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
-            .addColumn("friends", DataType.set(DataType.text()))
-            .build();
+            .addColumn("friends", DataType.set(DataType.text()));
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "friends set<text>,\n\t\t" +
             "PRIMARY KEY(id))");
@@ -121,12 +118,12 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_simple_table_with_map() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
-            .addColumn("friends", DataType.map(DataType.cint(), DataType.text()))
-            .build();
+            .addColumn("friends", DataType.map(DataType.cint(), DataType.text()));
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "friends map<int, text>,\n\t\t" +
             "PRIMARY KEY(id))");
@@ -135,14 +132,14 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_clustering_keys() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "col1 uuid,\n\t\t" +
             "col2 uuid,\n\t\t" +
@@ -153,14 +150,14 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_udt_clustering_keys() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col1", DataType.uuid())
             .addUDTClusteringKey("col2", frozen("address"))
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "col1 uuid,\n\t\t" +
             "col2 frozen<address>,\n\t\t" +
@@ -171,13 +168,13 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_composite_partition_key() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id1", DataType.bigint())
             .addPartitionKey("id2", DataType.text())
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id1 bigint,\n\t\t" +
             "id2 text,\n\t\t" +
             "name text,\n\t\t" +
@@ -187,15 +184,15 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_composite_partition_key_and_clustering_keys() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id1", DataType.bigint())
             .addPartitionKey("id2", DataType.text())
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id1 bigint,\n\t\t" +
             "id2 text,\n\t\t" +
             "col1 uuid,\n\t\t" +
@@ -207,14 +204,14 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_static_column() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col", DataType.uuid())
             .addStaticColumn("bucket", DataType.cint())
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "col uuid,\n\t\t" +
             "bucket int static,\n\t\t" +
@@ -225,14 +222,14 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_udt_static_column() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col", DataType.uuid())
             .addUDTStaticColumn("bucket", frozen("address"))
-            .addColumn("name", DataType.text())
-            .build();
+            .addColumn("name", DataType.text());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "col uuid,\n\t\t" +
             "bucket frozen<address> static,\n\t\t" +
@@ -243,16 +240,16 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_clustering_order() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
             .withOptions()
-            .clusteringOrder(clusteringOrder("col1", Direction.ASC), clusteringOrder("col2", Direction.DESC))
-            .build();
+            .clusteringOrder(clusteringOrder("col1", Direction.ASC), clusteringOrder("col2", Direction.DESC));
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "col1 uuid,\n\t\t" +
             "col2 uuid,\n\t\t" +
@@ -268,7 +265,7 @@ public class CreateTest {
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
-            .withOptions().clusteringOrder().build();
+            .withOptions().clusteringOrder();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -278,7 +275,7 @@ public class CreateTest {
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
-            .withOptions().clusteringOrder(clusteringOrder("", Direction.DESC)).build();
+            .withOptions().clusteringOrder(clusteringOrder("", Direction.DESC));
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -288,22 +285,22 @@ public class CreateTest {
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
-            .withOptions().clusteringOrder(clusteringOrder("col3", Direction.ASC)).build();
+            .withOptions().clusteringOrder(clusteringOrder("col3", Direction.ASC));
     }
 
     @Test(groups = "unit")
     public void should_create_table_with_compact_storage() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
             .withOptions()
-            .compactStorage()
-            .build();
+            .compactStorage();
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "col1 uuid,\n\t\t" +
             "col2 uuid,\n\t\t" +
@@ -315,7 +312,7 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_all_options() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
@@ -337,11 +334,10 @@ public class CreateTest {
             .populateIOCacheOnFlush(true)
             .readRepairChance(0.05)
             .replicateOnWrite(true)
-            .speculativeRetry(always())
-            .build();
+            .speculativeRetry(always());
 
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "col1 uuid,\n\t\t" +
             "col2 uuid,\n\t\t" +
@@ -366,15 +362,14 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_build_table_with_new_caching_options() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .caching(Caching.ALL, rows(100))
-            .build();
+            .caching(Caching.ALL, rows(100));
 
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\tPRIMARY KEY(id))\n\t" +
             "WITH caching = {'keys' : 'all', 'rows_per_partition' : 100}");
@@ -383,16 +378,15 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_build_table_with_custom_option() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
             .freeformOption("key1", "value1")
-            .freeformOption("key2", 1.0)
-            .build();
+            .freeformOption("key2", 1.0);
 
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\tPRIMARY KEY(id))\n\t" +
             "WITH key1 = 'value1' " +
@@ -405,8 +399,7 @@ public class CreateTest {
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .caching(Caching.KEYS_ONLY, allRows())
-            .build();
+            .caching(Caching.KEYS_ONLY, allRows()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -415,8 +408,7 @@ public class CreateTest {
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .caching(Caching.ALL, rows(-3))
-            .build();
+            .caching(Caching.ALL, rows(-3));
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -425,8 +417,7 @@ public class CreateTest {
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .readRepairChance(1.3)
-            .build();
+            .readRepairChance(1.3);
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -435,21 +426,20 @@ public class CreateTest {
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .readRepairChance(-1.3)
-            .build();
+            .readRepairChance(-1.3);
     }
 
     @Test(groups = "unit")
     public void should_create_table_with_speculative_retry_none() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .speculativeRetry(noSpeculativeRetry())
-            .build();
+            .speculativeRetry(noSpeculativeRetry());
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\t" +
             "PRIMARY KEY(id))\n\t" +
@@ -459,14 +449,14 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_speculative_retry_in_percentile() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .speculativeRetry(percentile(95))
-            .build();
+            .speculativeRetry(percentile(95));
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\t" +
             "PRIMARY KEY(id))\n\t" +
@@ -476,14 +466,14 @@ public class CreateTest {
     @Test(groups = "unit")
     public void should_create_table_with_speculative_retry_in_milli_secs() throws Exception {
         //When
-        final String built = createTable("test")
+        SchemaStatement statement = createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addColumn("name", DataType.text())
             .withOptions()
-            .speculativeRetry(millisecs(12))
-            .build();
+            .speculativeRetry(millisecs(12));
+
         //Then
-        assertThat(built).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
+        assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
             "id bigint,\n\t\t" +
             "name text,\n\t\t" +
             "PRIMARY KEY(id))\n\t" +
@@ -495,8 +485,7 @@ public class CreateTest {
     public void should_fail_if_same_partition_and_clustering_column() throws Exception {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
-            .addClusteringKey("pk", DataType.bigint())
-            .build();
+            .addClusteringKey("pk", DataType.bigint()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
@@ -504,8 +493,7 @@ public class CreateTest {
     public void should_fail_if_same_partition_and_simple_column() throws Exception {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
-            .addColumn("pk", DataType.text())
-            .build();
+            .addColumn("pk", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
@@ -514,8 +502,7 @@ public class CreateTest {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
             .addClusteringKey("cluster", DataType.bigint())
-            .addColumn("cluster", DataType.text())
-            .build();
+            .addColumn("cluster", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
@@ -523,8 +510,7 @@ public class CreateTest {
     public void should_fail_if_same_partition_and_static_column() throws Exception {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
-            .addStaticColumn("pk", DataType.text())
-            .build();
+            .addStaticColumn("pk", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
@@ -533,8 +519,7 @@ public class CreateTest {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
             .addClusteringKey("cluster", DataType.bigint())
-            .addStaticColumn("cluster", DataType.text())
-            .build();
+            .addStaticColumn("cluster", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
@@ -544,8 +529,7 @@ public class CreateTest {
             .addPartitionKey("pk", DataType.bigint())
             .addClusteringKey("cluster", DataType.uuid())
             .addColumn("col", DataType.bigint())
-            .addStaticColumn("col", DataType.text())
-            .build();
+            .addStaticColumn("col", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
@@ -553,8 +537,7 @@ public class CreateTest {
     public void should_fail_if_static_column_in_non_clustered_table() throws Exception {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
-            .addStaticColumn("stat", DataType.text())
-            .build();
+            .addStaticColumn("stat", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
@@ -562,8 +545,7 @@ public class CreateTest {
     public void should_fail_if_keyspace_name_is_a_reserved_keyword() throws Exception {
         createTable("add", "test")
             .addPartitionKey("pk", DataType.bigint())
-            .addColumn("col", DataType.text())
-            .build();
+            .addColumn("col", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
@@ -571,8 +553,7 @@ public class CreateTest {
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
         createTable("add")
             .addPartitionKey("pk", DataType.bigint())
-            .addColumn("col", DataType.text())
-            .build();
+            .addColumn("col", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
@@ -580,8 +561,7 @@ public class CreateTest {
     public void should_fail_if_partition_key_is_a_reserved_keyword() throws Exception {
         createTable("test")
             .addPartitionKey("add", DataType.bigint())
-            .addColumn("col", DataType.text())
-            .build();
+            .addColumn("col", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
@@ -590,8 +570,7 @@ public class CreateTest {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
             .addClusteringKey("add", DataType.uuid())
-            .addColumn("col", DataType.text())
-            .build();
+            .addColumn("col", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
@@ -600,8 +579,7 @@ public class CreateTest {
         createTable("test")
             .addPartitionKey("pk", DataType.bigint())
             .addClusteringKey("cluster", DataType.uuid())
-            .addColumn("add", DataType.text())
-            .build();
+            .addColumn("add", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
@@ -611,8 +589,7 @@ public class CreateTest {
             .addPartitionKey("pk", DataType.bigint())
             .addClusteringKey("cluster", DataType.uuid())
             .addStaticColumn("add", DataType.text())
-            .addColumn("col", DataType.text())
-            .build();
+            .addColumn("col", DataType.text()).getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalStateException.class,
@@ -622,6 +599,6 @@ public class CreateTest {
             .addPartitionKey("pk", DataType.bigint())
             .addClusteringKey("cluster", DataType.uuid())
             .addStaticColumn("stat", DataType.text())
-            .withOptions().compactStorage().build();
+            .withOptions().compactStorage().getQueryString();
     }
 }

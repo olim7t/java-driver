@@ -178,7 +178,7 @@ public class Create extends AbstractCreateStatement<Create> {
         private final Create create;
 
         private Options(Create create) {
-            super(create);
+            super(create.asStatementStart());
             this.create = create;
         }
 
@@ -261,20 +261,8 @@ public class Create extends AbstractCreateStatement<Create> {
             }
         }
 
-        /**
-         * Generate the final CREATE TABLE statement <strong>with</strong> table options.
-         *
-         * @return the final CREATE TABLE statement <strong>with</strong> table options.
-         */
         @Override
-        public String build() {
-            return super.build() + this.buildOptions();
-        }
-
-        private String buildOptions() {
-            final List<String> commonOptions = super.buildCommonOptions();
-            List<String> options = new ArrayList<String>(commonOptions);
-
+        protected void addSpecificOptions(List<String> options) {
             if (!clusteringOrderKeys.isEmpty()) {
                 options.add("CLUSTERING ORDER BY(" + Joiner.on(", ").join(clusteringOrderKeys) + ")");
             }
@@ -285,12 +273,11 @@ public class Create extends AbstractCreateStatement<Create> {
                 }
                 options.add("COMPACT STORAGE");
             }
-
-            return STATEMENT_START + "WITH " + Joiner.on(" AND ").join(options);
         }
     }
 
-    @Override String buildInternal() {
+    @Override
+    public String buildInternal() {
         if (partitionColumns.size() < 1) {
             throw new IllegalStateException(String.format("There should be at least one partition key defined for the table '%s'", tableName));
         }
@@ -344,14 +331,6 @@ public class Create extends AbstractCreateStatement<Create> {
         createStatement.append(")");
 
         return createStatement.toString();
-    }
-
-    /**
-     * Generate a CREATE TABLE statement <strong>without</strong> table options
-     * @return the final CREATE TABLE statement
-     */
-    public String build() {
-        return buildInternal();
     }
 
     private void validateColumnsDeclaration() {

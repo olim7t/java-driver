@@ -56,7 +56,8 @@ public class Drop extends SchemaStatement {
         return this;
     }
 
-    @Override String buildInternal() {
+    @Override
+    public String buildInternal() {
         StringBuilder dropStatement = new StringBuilder("DROP " + itemType + " ");
         if (ifExists) {
             dropStatement.append("IF EXISTS ");

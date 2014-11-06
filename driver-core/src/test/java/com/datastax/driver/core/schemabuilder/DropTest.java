@@ -28,93 +28,93 @@ public class DropTest {
     @Test(groups = "unit")
     public void should_drop_table() throws Exception {
         //When
-        final String built = dropTable("test").build();
+        SchemaStatement statement = dropTable("test");
 
         //Then
-        assertThat(built).isEqualTo("DROP TABLE test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP TABLE test");
     }
 
     @Test(groups = "unit")
     public void should_drop_table_with_keyspace() throws Exception {
         //When
-        final String built = dropTable("ks", "test").build();
+        SchemaStatement statement = dropTable("ks", "test");
 
         //Then
-        assertThat(built).isEqualTo("DROP TABLE ks.test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP TABLE ks.test");
     }
 
     @Test(groups = "unit")
     public void should_drop_table_with_keyspace_if_exists() throws Exception {
         //When
-        final String built = dropTable("ks", "test").ifExists().build();
+        SchemaStatement statement = dropTable("ks", "test").ifExists();
 
         //Then
-        assertThat(built).isEqualTo("DROP TABLE IF EXISTS ks.test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP TABLE IF EXISTS ks.test");
     }
 
     @Test(groups = "unit")
     public void should_drop_type() throws Exception {
         //When
-        final String built = dropType("test").build();
+        SchemaStatement statement = dropType("test");
 
         //Then
-        assertThat(built).isEqualTo("DROP TYPE test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP TYPE test");
     }
 
     @Test(groups = "unit")
     public void should_drop_type_with_keyspace() throws Exception {
         //When
-        final String built = dropType("ks", "test").build();
+        SchemaStatement statement = dropType("ks", "test");
 
         //Then
-        assertThat(built).isEqualTo("DROP TYPE ks.test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP TYPE ks.test");
     }
 
     @Test(groups = "unit")
     public void should_drop_type_with_keyspace_if_exists() throws Exception {
         //When
-        final String built = dropType("ks", "test").ifExists().build();
+        SchemaStatement statement = dropType("ks", "test").ifExists();
 
         //Then
-        assertThat(built).isEqualTo("DROP TYPE IF EXISTS ks.test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP TYPE IF EXISTS ks.test");
     }
 
     @Test(groups = "unit")
     public void should_drop_index() throws Exception {
         //When
-        final String built = dropIndex("test").build();
+        SchemaStatement statement = dropIndex("test");
 
         //Then
-        assertThat(built).isEqualTo("DROP INDEX test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP INDEX test");
     }
 
     @Test(groups = "unit")
     public void should_drop_index_with_keyspace() throws Exception {
         //When
-        final String built = dropIndex("ks", "test").build();
+        SchemaStatement statement = dropIndex("ks", "test");
 
         //Then
-        assertThat(built).isEqualTo("DROP INDEX ks.test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP INDEX ks.test");
     }
 
     @Test(groups = "unit")
     public void should_drop_index_with_keyspace_if_exists() throws Exception {
         //When
-        final String built = dropIndex("ks", "test").ifExists().build();
+        SchemaStatement statement = dropIndex("ks", "test").ifExists();
 
         //Then
-        assertThat(built).isEqualTo("DROP INDEX IF EXISTS ks.test");
+        assertThat(statement.getQueryString()).isEqualTo("DROP INDEX IF EXISTS ks.test");
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
         expectedExceptionsMessageRegExp = "The keyspace name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_keyspace_name_is_a_reserved_keyword() throws Exception {
-        dropTable("add", "test").build();
+        dropTable("add", "test").getQueryString();
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class,
         expectedExceptionsMessageRegExp = "The table name 'add' is not allowed because it is a reserved keyword")
     public void should_fail_if_table_name_is_a_reserved_keyword() throws Exception {
-        dropTable("add").build();
+        dropTable("add").getQueryString();
     }
 }

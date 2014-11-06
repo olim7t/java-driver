@@ -17,10 +17,14 @@ package com.datastax.driver.core.schemabuilder;
 
 import com.google.common.base.Optional;
 
+import static com.datastax.driver.core.schemabuilder.SchemaStatement.STATEMENT_START;
+import static com.datastax.driver.core.schemabuilder.SchemaStatement.validateNotEmpty;
+import static com.datastax.driver.core.schemabuilder.SchemaStatement.validateNotKeyWord;
+
 /**
  * A built CREATE INDEX statement.
  */
-public class CreateIndex extends SchemaStatement {
+public class CreateIndex implements StatementStart {
 
     private String indexName;
     private boolean ifNotExists = false;
@@ -82,11 +86,11 @@ public class CreateIndex extends SchemaStatement {
          * @param columnName the column name.
          * @return the final CREATE INDEX statement.
          */
-        public String andColumn(String columnName) {
+        public SchemaStatement andColumn(String columnName) {
             validateNotEmpty(columnName, "Column name");
             validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
             CreateIndex.this.columnName = columnName;
-            return buildInternal();
+            return SchemaStatement.fromQueryString(buildInternal());
         }
 
         /**
@@ -94,16 +98,17 @@ public class CreateIndex extends SchemaStatement {
          * @param columnName the column name.
          * @return the final CREATE INDEX statement.
          */
-        public String andKeysOfColumn(String columnName) {
+        public SchemaStatement andKeysOfColumn(String columnName) {
             validateNotEmpty(columnName, "Column name");
             validateNotKeyWord(columnName, String.format("The column name '%s' is not allowed because it is a reserved keyword", columnName));
             CreateIndex.this.columnName = columnName;
             CreateIndex.this.keys = true;
-            return buildInternal();
+            return SchemaStatement.fromQueryString(buildInternal());
         }
     }
 
-    @Override String buildInternal() {
+    @Override
+    public String buildInternal() {
         StringBuilder createStatement = new StringBuilder(STATEMENT_START).append("CREATE INDEX ");
 
         if (ifNotExists) {

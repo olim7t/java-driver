@@ -17,12 +17,17 @@ package com.datastax.driver.core.schemabuilder;
 
 import java.util.List;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
 import com.datastax.driver.core.DataType;
 
-public class Alter extends SchemaStatement {
+import static com.datastax.driver.core.schemabuilder.SchemaStatement.validateNotEmpty;
+import static com.datastax.driver.core.schemabuilder.SchemaStatement.validateNotKeyWord;
+
+/**
+ * An in-construction ALTER TABLE statement.
+ */
+public class Alter implements StatementStart {
 
     private Optional<String> keyspaceName = Optional.absent();
     private String tableName;
@@ -86,10 +91,10 @@ public class Alter extends SchemaStatement {
      * @param columnName the name of the column to be dropped.
      * @return the final ALTER TABLE DROP COLUMN statement.
      */
-    public String dropColumn(String columnName) {
+    public SchemaStatement dropColumn(String columnName) {
         validateNotEmpty(columnName, "Column to be dropped");
         validateNotKeyWord(columnName, String.format("The dropped column name '%s' is not allowed because it is a reserved keyword", columnName));
-        return this.buildInternal() + " DROP " + columnName;
+        return SchemaStatement.fromQueryString(buildInternal() + " DROP " + columnName);
     }
 
     /**
@@ -132,20 +137,22 @@ public class Alter extends SchemaStatement {
          * Define the new type of the altered column.
          *
          * @param type the new type of the altered column.
-         * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement.
+         * @return the final statement.
          */
-        public String type(DataType type) {
-            return alter.buildInternal() + " ALTER " + columnName + " TYPE " + type.toString();
+        public SchemaStatement type(DataType type) {
+            return SchemaStatement.fromQueryString(
+                alter.buildInternal() + " ALTER " + columnName + " TYPE " + type.toString());
         }
 
         /**
          * Define the new type of the altered column, when that type contains a UDT.
          *
          * @param udtType the UDT type. Use {@link SchemaBuilder#frozen(String)} or {@link SchemaBuilder#udtLiteral(String)}.
-         * @return the final <strong>ALTER TABLE {@code columnName} TYPE {@code type} </strong> statement.
+         * @return the final statement.
          */
-        public String udtType(UDTType udtType) {
-            return alter.buildInternal() + " ALTER " + columnName + " TYPE " + udtType.asCQLString();
+        public SchemaStatement udtType(UDTType udtType) {
+            return SchemaStatement.fromQueryString(
+                alter.buildInternal() + " ALTER " + columnName + " TYPE " + udtType.asCQLString());
         }
     }
 
@@ -168,22 +175,24 @@ public class Alter extends SchemaStatement {
          * Define the type of the added column.
          *
          * @param type the type of the added column.
-         * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement.
+         * @return the final statement.
          */
-        public String type(DataType type) {
-            return alter.buildInternal() + " ADD " + columnName + " " + type.toString()
-                + (staticColumn ? " static" : "");
+        public SchemaStatement type(DataType type) {
+            return SchemaStatement.fromQueryString(
+                alter.buildInternal() + " ADD " + columnName + " " + type.toString()
+                    + (staticColumn ? " static" : ""));
         }
 
         /**
          * Define the type of the added column, when that type contains a UDT.
          *
          * @param udtType the UDT type of the added column.
-         * @return the final <strong>ALTER TABLE ADD {@code columnName} {@code type} </strong> statement.
+         * @return the final statement.
          */
-        public String udtType(UDTType udtType) {
-            return alter.buildInternal() + " ADD " + columnName + " " + udtType.asCQLString()
-                + (staticColumn ? " static" : "");
+        public SchemaStatement udtType(UDTType udtType) {
+            return SchemaStatement.fromQueryString(
+                alter.buildInternal() + " ADD " + columnName + " " + udtType.asCQLString()
+                    + (staticColumn ? " static" : ""));
         }
     }
 
@@ -204,12 +213,13 @@ public class Alter extends SchemaStatement {
          * Define the new name of the column.
          *
          * @param newColumnName the new name of the column.
-         * @return the final <strong>ALTER TABLE RENAME {@code columnName} TO {@code newColumnName} </strong> statement.
+         * @return the final statement.
          */
-        public String to(String newColumnName) {
+        public SchemaStatement to(String newColumnName) {
             validateNotEmpty(newColumnName, "New column name");
             validateNotKeyWord(newColumnName, String.format("The new column name '%s' is not allowed because it is a reserved keyword", newColumnName));
-            return alter.buildInternal() + " RENAME " + columnName + " TO " + newColumnName;
+            return SchemaStatement.fromQueryString(
+                alter.buildInternal() + " RENAME " + columnName + " TO " + newColumnName);
         }
     }
 
@@ -222,28 +232,18 @@ public class Alter extends SchemaStatement {
             super(alter);
         }
 
-        /**
-         * Generate the final ALTER TABLE statement <strong>with</strong> table options.
-         *
-         * @return the final ALTER TABLE statement <strong>with</strong> table options.
-         */
         @Override
-        public String build() {
-            return super.build() + " " + buildOptions();
+        protected void addSpecificOptions(List<String> options) {
+            // nothing to do (no specific options)
         }
-
-        private String buildOptions() {
-            final List<String> commonOptions = super.buildCommonOptions();
-            return "WITH " + Joiner.on(" AND ").join(commonOptions);
-        }
-
     }
 
-    @Override String buildInternal() {
+    @Override
+    public String buildInternal() {
         String tableSpec = keyspaceName.isPresent()
             ? keyspaceName.get() + "." + tableName
             : tableName;
 
-        return STATEMENT_START + "ALTER TABLE " + tableSpec;
+        return SchemaStatement.STATEMENT_START + "ALTER TABLE " + tableSpec;
     }
 }

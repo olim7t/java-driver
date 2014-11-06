@@ -73,22 +73,37 @@ public abstract class SchemaStatement extends RegularStatement {
         return null; // there is no token awareness for DDL statements
     }
 
-    protected static void validateNotEmpty(String columnName, String label) {
+    static void validateNotEmpty(String columnName, String label) {
         if (Strings.isNullOrEmpty(columnName)) {
             throw new IllegalArgumentException(label + " should not be null or blank");
         }
     }
 
-    protected static void validateNotNull(Object value, String label) {
+    static void validateNotNull(Object value, String label) {
         if (value == null) {
             throw new IllegalArgumentException(label + " should not be null");
         }
     }
 
-    protected static void validateNotKeyWord(String label, String message) {
+    static void validateNotKeyWord(String label, String message) {
         if (RESERVED_KEYWORDS.contains(label)) {
             throw new IllegalArgumentException(message);
         }
     }
 
+    static SchemaStatement fromQueryString(final String queryString) {
+        return new SchemaStatement() {
+            @Override public String buildInternal() {
+                return queryString;
+            }
+        };
+    }
+
+    StatementStart asStatementStart() {
+        return new StatementStart() {
+            @Override public String buildInternal() {
+                return SchemaStatement.this.buildInternal();
+            }
+        };
+    }
 }
