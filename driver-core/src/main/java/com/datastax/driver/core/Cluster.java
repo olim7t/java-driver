@@ -553,6 +553,7 @@ public class Cluster implements Closeable {
         private final List<InetAddress> rawAddresses = new ArrayList<InetAddress>();
         private int port = ProtocolOptions.DEFAULT_PORT;
         private int maxSchemaAgreementWaitSeconds = ProtocolOptions.DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS;
+        private int ioThreadCount = ProtocolOptions.DEFAULT_IO_THREAD_COUNT;
         private int protocolVersion = -1;
         private AuthProvider authProvider = AuthProvider.NONE;
 
@@ -631,13 +632,33 @@ public class Cluster implements Closeable {
          * @param maxSchemaAgreementWaitSeconds the new value to set.
          * @return this Builder.
          *
-         * @throws IllegalStateException if the provided value is zero or less.
+         * @throws IllegalArgumentException if the provided value is zero or less.
          */
         public Builder withMaxSchemaAgreementWaitSeconds(int maxSchemaAgreementWaitSeconds) {
             if (maxSchemaAgreementWaitSeconds <= 0)
                 throw new IllegalArgumentException("Max schema agreement wait must be greater than zero");
 
             this.maxSchemaAgreementWaitSeconds = maxSchemaAgreementWaitSeconds;
+            return this;
+        }
+
+        /**
+         * Sets the number of threads dedicated to I/O operations.
+         * <p>
+         * More precisely, this is the number of threads in the Netty {@code NioEventLoopGroup} used by the driver.
+         * If not set through this method, the default value is 0, which leads to Netty using its default
+         * (currently {@code Runtime.getRuntime().availableProcessors() * 2}).
+         *
+         * @param ioThreadCount the number of threads.
+         * @return this Builder.
+         *
+         * @throws IllegalArgumentException if the provided value is less than zero.
+         */
+        public Builder withIoThreadCount(int ioThreadCount) {
+            if (ioThreadCount < 0)
+                throw new IllegalArgumentException("IO thread count must be zero or more");
+
+            this.ioThreadCount = ioThreadCount;
             return this;
         }
 
@@ -1045,7 +1066,7 @@ public class Cluster implements Closeable {
                 addressTranslater == null ? Policies.defaultAddressTranslater() : addressTranslater
             );
             return new Configuration(policies,
-                                     new ProtocolOptions(port, protocolVersion, maxSchemaAgreementWaitSeconds, sslOptions, authProvider).setCompression(compression),
+                                     new ProtocolOptions(port, protocolVersion, maxSchemaAgreementWaitSeconds, ioThreadCount, sslOptions, authProvider).setCompression(compression),
                                      poolingOptions == null ? new PoolingOptions() : poolingOptions,
                                      socketOptions == null ? new SocketOptions() : socketOptions,
                                      metricsEnabled ? new MetricsOptions(jmxEnabled) : null,

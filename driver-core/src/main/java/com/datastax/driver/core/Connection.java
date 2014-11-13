@@ -467,8 +467,7 @@ class Connection {
 
         public final HashedWheelTimer timer = new HashedWheelTimer(new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build());
 
-        // TODO make number of event loop threads tunable?
-        private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+        private final EventLoopGroup eventLoopGroup;
         private final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
         private final ConcurrentMap<Host, AtomicInteger> idGenerators = new ConcurrentHashMap<Host, AtomicInteger>();
@@ -489,6 +488,7 @@ class Connection {
             this.configuration = configuration;
             this.authProvider = configuration.getProtocolOptions().getAuthProvider();
             this.protocolVersion = configuration.getProtocolOptions().initialProtocolVersion;
+            this.eventLoopGroup = new NioEventLoopGroup(configuration.getProtocolOptions().getIoThreadCount());
         }
 
         public int getPort() {

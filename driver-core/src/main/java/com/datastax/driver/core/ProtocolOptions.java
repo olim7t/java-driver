@@ -67,12 +67,18 @@ public class ProtocolOptions {
      */
     public static final int DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS = 10;
 
+    /**
+     * The default value for
+     */
+    public static final int DEFAULT_IO_THREAD_COUNT = 0;
+
     private volatile Cluster.Manager manager;
 
     private final int port;
     final int initialProtocolVersion; // What the user asked us. Will be -1 by default.
 
     private final int maxSchemaAgreementWaitSeconds;
+    private final int ioThreadCount;
 
     private final SSLOptions sslOptions; // null if no SSL
     private final AuthProvider authProvider;
@@ -96,7 +102,7 @@ public class ProtocolOptions {
      * @param port the port to use for the binary protocol.
      */
     public ProtocolOptions(int port) {
-        this(port, -1, DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS, null, AuthProvider.NONE);
+        this(port, -1, DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS, DEFAULT_IO_THREAD_COUNT, null, AuthProvider.NONE);
     }
 
     /**
@@ -108,15 +114,20 @@ public class ProtocolOptions {
      * version uses will be the biggest version supported by the <em>first</em> node the driver connects to.
      * Otherwise, it must be either 1 or 2 to force using a particular protocol version. See
      * {@link Cluster.Builder#withProtocolVersion} for more details.
+     * @param maxSchemaAgreementWaitSeconds the maximum time to wait for schema agreement. See
+     * {@link Cluster.Builder#withMaxSchemaAgreementWaitSeconds(int)} for more details.
+     * @param ioThreadCount the number of I/O threads. See {@link Cluster.Builder#withIoThreadCount(int)}
+     * for more details.
      * @param sslOptions the SSL options to use. Use {@code null} if SSL is not
      * to be used.
      * @param authProvider the {@code AuthProvider} to use for authentication against
      * the Cassandra nodes.
      */
-    public ProtocolOptions(int port, int protocolVersion, int maxSchemaAgreementWaitSeconds, SSLOptions sslOptions, AuthProvider authProvider) {
+    public ProtocolOptions(int port, int protocolVersion, int maxSchemaAgreementWaitSeconds, int ioThreadCount, SSLOptions sslOptions, AuthProvider authProvider) {
         this.port = port;
         this.initialProtocolVersion = protocolVersion;
         this.maxSchemaAgreementWaitSeconds = maxSchemaAgreementWaitSeconds;
+        this.ioThreadCount = ioThreadCount;
         this.sslOptions = sslOptions;
         this.authProvider = authProvider;
 
@@ -191,6 +202,15 @@ public class ProtocolOptions {
      */
     public int getMaxSchemaAgreementWaitSeconds() {
         return maxSchemaAgreementWaitSeconds;
+    }
+
+    /**
+     * Returns the number of threads for I/O operations.
+     *
+     * @return the thread count.
+     */
+    public int getIoThreadCount() {
+        return ioThreadCount;
     }
 
     /**
