@@ -246,7 +246,8 @@ public class CreateTest {
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
             .withOptions()
-            .clusteringOrder(clusteringOrder("col1", Direction.ASC), clusteringOrder("col2", Direction.DESC));
+            .clusteringOrder("col1", Direction.ASC)
+            .clusteringOrder("col2", Direction.DESC);
 
         //Then
         assertThat(statement.getQueryString()).isEqualTo("\n\tCREATE TABLE test(\n\t\t" +
@@ -259,23 +260,13 @@ public class CreateTest {
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
-    public void should_fail_when_no_clustering_order_provided() throws Exception {
-        createTable("test")
-            .addPartitionKey("id", DataType.bigint())
-            .addClusteringKey("col1", DataType.uuid())
-            .addClusteringKey("col2", DataType.uuid())
-            .addColumn("name", DataType.text())
-            .withOptions().clusteringOrder();
-    }
-
-    @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
     public void should_fail_when_blank_clustering_order_column_provided() throws Exception {
         createTable("test")
             .addPartitionKey("id", DataType.bigint())
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
-            .withOptions().clusteringOrder(clusteringOrder("", Direction.DESC));
+            .withOptions().clusteringOrder("", Direction.DESC);
     }
 
     @Test(groups = "unit", expectedExceptions = IllegalArgumentException.class)
@@ -285,7 +276,7 @@ public class CreateTest {
             .addClusteringKey("col1", DataType.uuid())
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
-            .withOptions().clusteringOrder(clusteringOrder("col3", Direction.ASC));
+            .withOptions().clusteringOrder("col3", Direction.ASC);
     }
 
     @Test(groups = "unit")
@@ -318,7 +309,8 @@ public class CreateTest {
             .addClusteringKey("col2", DataType.uuid())
             .addColumn("name", DataType.text())
             .withOptions()
-            .clusteringOrder(clusteringOrder("col1", Direction.ASC), clusteringOrder("col2", Direction.DESC))
+            .clusteringOrder("col1", Direction.ASC)
+            .clusteringOrder("col2", Direction.DESC)
             .compactStorage()
             .bloomFilterFPChance(0.01)
             .caching(Caching.ROWS_ONLY)

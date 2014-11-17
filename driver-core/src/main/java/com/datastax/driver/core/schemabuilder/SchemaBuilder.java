@@ -193,17 +193,6 @@ public final class SchemaBuilder {
     }
 
     /**
-     * Define a clustering order for a CREATE TABLE statement.
-     *
-     * @param columnName the clustering column name.
-     * @param direction the clustering direction (DESC/ASC).
-     * @return the clustering order.
-     */
-    public static Create.Options.ClusteringOrder clusteringOrder(String columnName, Direction direction) {
-        return new Create.Options.ClusteringOrder(columnName, direction);
-    }
-
-    /**
      * Create options for the size-tiered compaction strategy, for use in a CREATE or ALTER TABLE statement.
      *
      * @return the options.

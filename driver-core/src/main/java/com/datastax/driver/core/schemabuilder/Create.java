@@ -22,6 +22,7 @@ import static java.util.Map.Entry;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 import com.datastax.driver.core.DataType;
 
@@ -182,28 +183,24 @@ public class Create extends AbstractCreateStatement<Create> {
             this.create = create;
         }
 
-        private List<ClusteringOrder> clusteringOrderKeys = Collections.emptyList();
+        private List<ClusteringOrder> clusteringOrderKeys = Lists.newArrayList();
 
         private boolean compactStorage;
 
         /**
          * Add a clustering order for this table.
+         * <p>
+         * To define the order on multiple columns, call this method repeatedly. The columns will be declared in the call order.
          *
-         * @param clusteringOrders the columns and directions specifying the order (use {@link SchemaBuilder#clusteringOrder(String, SchemaBuilder.Direction)}).
-         *                         They will be added in their declaration order.
+         * @param columnName the clustering column name.
+         * @param direction the clustering direction (DESC/ASC).
          * @return this {@code Options} object.
          */
-        public Options clusteringOrder(ClusteringOrder... clusteringOrders) {
-            if (clusteringOrders == null || clusteringOrders.length == 0) {
-                throw new IllegalArgumentException(String.format("Cannot create table '%s' with null or empty clustering order keys", create.tableName));
+        public Options clusteringOrder(String columnName, SchemaBuilder.Direction direction) {
+            if (!create.clusteringColumns.containsKey(columnName)) {
+                throw new IllegalArgumentException(String.format("Clustering key '%s' is unknown. Did you forget to declare it first?", columnName));
             }
-            for (ClusteringOrder clusteringOrder : clusteringOrders) {
-                final String clusteringColumnName = clusteringOrder.getClusteringColumnName();
-                if (!create.clusteringColumns.containsKey(clusteringColumnName)) {
-                    throw new IllegalArgumentException(String.format("Clustering key '%s' is unknown. Did you forget to declare it first ?", clusteringColumnName));
-                }
-            }
-            clusteringOrderKeys = Arrays.asList(clusteringOrders);
+            clusteringOrderKeys.add(new ClusteringOrder(columnName, direction));
             return this;
         }
 
@@ -217,10 +214,7 @@ public class Create extends AbstractCreateStatement<Create> {
             return this;
         }
 
-        /**
-         * Defines a clustering order.
-         */
-        public static class ClusteringOrder {
+        private static class ClusteringOrder {
             private final String clusteringColumnName;
             private final SchemaBuilder.Direction direction;
 
