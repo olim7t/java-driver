@@ -420,7 +420,10 @@ class ControlConnection implements Host.StateListener {
                 logger.error("No row found for host {} in {}'s peers system table. {} will be ignored.", host.getAddress(), c.address, host.getAddress());
                 return false;
             }
-        } else if (row.getInet("rpc_address") == null) {
+        // Ignore hosts with a null rpc_address, as this is most likely a phantom row in system.peers (JAVA-428).
+        // Don't test this for the control host since we're already connected to it anyway. Plus this avoids a bug with C* 1.2, which doesn't have
+        // rpc_address in system.local (JAVA-546).
+        } else if (!c.address.equals(host.getSocketAddress()) && row.getInet("rpc_address") == null) {
             logger.error("No rpc_address found for host {} in {}'s peers system table. {} will be ignored.", host.getAddress(), c.address, host.getAddress());
             return false;
         }
