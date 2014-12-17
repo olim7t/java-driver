@@ -15,7 +15,6 @@
  */
 package com.datastax.driver.core;
 
-import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,16 +30,14 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 
-class ClusterDiagnostics implements ClusterDiagnosticsMBean {
+class ClusterDiagnostics extends AbstractMBean implements ClusterDiagnosticsMBean {
     private static final Logger logger = LoggerFactory.getLogger(ClusterDiagnostics.class);
 
     private final Cluster.Manager manager;
-    private final ObjectName objectName;
 
     ClusterDiagnostics(Cluster.Manager manager) {
+        super(buildObjectName(manager));
         this.manager = manager;
-        this.objectName = buildObjectName(this.manager.clusterName);
-        register();
     }
 
     @Override
@@ -94,34 +91,12 @@ class ClusterDiagnostics implements ClusterDiagnosticsMBean {
         return manager.isClosed();
     }
 
-    private ObjectName buildObjectName(String clusterName) {
+    private static ObjectName buildObjectName(Cluster.Manager manager) {
         try {
-            return new ObjectName("com.datastax.driver.core:type=Cluster,name=" + this.manager.clusterName);
+            return new ObjectName("com.datastax.driver.core:type=Cluster,name=" + manager.clusterName);
         } catch (MalformedObjectNameException e) {
-            logger.warn("Could not register diagnostics MBean during cluster init", e);
+            logger.warn("Could not build object name", e);
             return null;
-        }
-    }
-
-    private void register() {
-        if (this.objectName == null)
-            return; // warning was already logged
-
-        try {
-            ManagementFactory.getPlatformMBeanServer().registerMBean(this, objectName);
-        } catch (Exception e) {
-            logger.warn("Error while registering", e);
-        }
-    }
-
-    void unregister() {
-        if (this.objectName == null)
-            return;
-
-        try {
-            ManagementFactory.getPlatformMBeanServer().unregisterMBean(objectName);
-        } catch (Exception e) {
-            logger.warn("Error while unregistering", e);
         }
     }
 

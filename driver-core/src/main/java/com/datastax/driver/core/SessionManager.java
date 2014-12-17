@@ -51,6 +51,8 @@ class SessionManager extends AbstractSession {
     private volatile boolean isInit;
     private volatile boolean isClosing;
 
+    private volatile SessionDiagnostics diagnosticsMBean;
+
     // Package protected, only Cluster should construct that.
     SessionManager(Cluster cluster) {
         this.cluster = cluster;
@@ -75,6 +77,8 @@ class SessionManager extends AbstractSession {
             // it's important that existing sessions get them in a timely manner. So we create the pools one by one:
             createPoolsSequentially(hosts);
         }
+
+        diagnosticsMBean = new SessionDiagnostics(this);
 
         isInit = true;
         updateCreatedPools(executor());
@@ -132,6 +136,8 @@ class SessionManager extends AbstractSession {
 
         isClosing = true;
         cluster.manager.removeSession(this);
+        if (diagnosticsMBean != null)
+            diagnosticsMBean.unregister();
 
         List<CloseFuture> futures = new ArrayList<CloseFuture>(pools.size());
         for (HostConnectionPool pool : pools.values())
