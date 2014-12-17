@@ -1143,6 +1143,8 @@ public class Cluster implements Closeable {
         final Set<Host.StateListener> listeners;
         final Set<LatencyTracker> trackers = new CopyOnWriteArraySet<LatencyTracker>();
 
+        private volatile ClusterDiagnostics diagnosticsMBean;
+
         private Manager(String clusterName, List<InetSocketAddress> contactPoints, Configuration configuration, Collection<Host.StateListener> listeners) {
             logger.debug("Starting new cluster with contact points " + contactPoints);
 
@@ -1232,6 +1234,7 @@ public class Cluster implements Closeable {
                         }
                         isFullyInit = true;
 
+                        this.diagnosticsMBean = new ClusterDiagnostics(this);
                         return;
                     } catch (UnsupportedProtocolVersionException e) {
                         assert connectionFactory.protocolVersion < 1;
@@ -2206,6 +2209,9 @@ public class Cluster implements Closeable {
                             connectionFactory.shutdown();
 
                             reaper.shutdown();
+
+                            if (diagnosticsMBean != null)
+                                diagnosticsMBean.unregister();
 
                             set(null);
                         } catch (InterruptedException e) {
