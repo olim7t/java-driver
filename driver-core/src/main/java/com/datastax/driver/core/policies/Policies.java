@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core.policies;
 
+import com.google.common.base.Objects;
+
 /**
  * Policies configured for a {@link com.datastax.driver.core.Cluster} instance.
  */
@@ -159,5 +161,15 @@ public class Policies {
      */
     public AddressTranslater getAddressTranslater() {
         return addressTranslater;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("loadBalancingPolicy", loadBalancingPolicy)
+            .add("reconnectionPolicy", reconnectionPolicy)
+            .add("retryPolicy", retryPolicy)
+            .add("addressTranslater", addressTranslater)
+            .toString();
     }
 }

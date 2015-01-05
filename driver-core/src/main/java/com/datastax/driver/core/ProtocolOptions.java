@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core;
 
+import com.google.common.base.Objects;
+
 /**
  * Options of the Cassandra native binary protocol.
  */
@@ -214,4 +216,15 @@ public class ProtocolOptions {
         return authProvider;
     }
 
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("port", port)
+            .add("initialProtocolVersion", initialProtocolVersion)
+            .add("maxSchemaAgreementWaitSeconds", maxSchemaAgreementWaitSeconds)
+            .add("sslOptions", sslOptions)
+            .add("authProvider", authProvider)
+            .add("compression", compression)
+            .toString();
+    }
 }

@@ -203,4 +203,9 @@ public class RoundRobinPolicy implements LoadBalancingPolicy, CloseableLoadBalan
     public void close() {
         // nothing to do
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

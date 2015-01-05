@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core.policies;
 
+import com.google.common.base.Objects;
+
 /**
  * A reconnection policy that waits a constant time between each reconnection attempt.
  */
@@ -61,5 +63,12 @@ public class ConstantReconnectionPolicy implements ReconnectionPolicy {
         public long nextDelayMs() {
             return delayMs;
         }
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("delayMs", delayMs)
+            .toString();
     }
 }

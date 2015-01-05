@@ -16,12 +16,9 @@
 package com.datastax.driver.core.policies;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import com.datastax.driver.core.Cluster;
@@ -158,5 +155,13 @@ public class WhiteListPolicy implements ChainableLoadBalancingPolicy, CloseableL
     public void close() {
         if (childPolicy instanceof CloseableLoadBalancingPolicy)
             ((CloseableLoadBalancingPolicy)childPolicy).close();
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("childPolicy", childPolicy)
+            // white list intentionally excluded, it can be prohibitively long, and IPs are sensitive information for some users
+            .toString();
     }
 }

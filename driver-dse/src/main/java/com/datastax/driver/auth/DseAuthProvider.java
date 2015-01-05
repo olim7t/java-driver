@@ -84,4 +84,9 @@ public class DseAuthProvider implements AuthProvider
     {
         return new KerberosAuthenticator(host);
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

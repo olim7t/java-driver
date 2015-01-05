@@ -18,9 +18,9 @@ package com.datastax.driver.core.policies;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import com.google.common.collect.Lists;
-
+import com.google.common.base.Objects;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Lists;
 
 import com.datastax.driver.core.*;
 
@@ -194,5 +194,13 @@ public class TokenAwarePolicy implements ChainableLoadBalancingPolicy, Closeable
     public void close() {
         if (childPolicy instanceof CloseableLoadBalancingPolicy)
             ((CloseableLoadBalancingPolicy)childPolicy).close();
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("shuffleReplicas", shuffleReplicas)
+            .add("childPolicy", childPolicy)
+            .toString();
     }
 }

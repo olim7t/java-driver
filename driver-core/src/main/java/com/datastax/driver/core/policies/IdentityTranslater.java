@@ -35,4 +35,9 @@ public class IdentityTranslater implements AddressTranslater {
     public InetSocketAddress translate(InetSocketAddress address) {
         return address;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

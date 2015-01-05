@@ -16,27 +16,18 @@
 package com.datastax.driver.core.policies;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.AbstractIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Configuration;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.HostDistance;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 
 /**
  * A data-center aware Round-robin load balancing policy.
@@ -439,5 +430,14 @@ public class DCAwareRoundRobinPolicy implements LoadBalancingPolicy, CloseableLo
     @Override
     public void close() {
         // nothing to do
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("localDc", localDc)
+            .add("usedHostsPerRemoteDc", usedHostsPerRemoteDc)
+            .add("dontHopForLocalCL", dontHopForLocalCL)
+            .toString();
     }
 }

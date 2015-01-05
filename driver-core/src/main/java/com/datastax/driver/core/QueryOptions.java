@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core;
 
+import com.google.common.base.Objects;
+
 import com.datastax.driver.core.exceptions.UnsupportedFeatureException;
 
 /**
@@ -137,5 +139,14 @@ public class QueryOptions {
      */
     public int getFetchSize() {
         return fetchSize;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("consistency", consistency)
+            .add("serialConsistency", serialConsistency)
+            .add("fetchSize", fetchSize)
+            .toString();
     }
 }

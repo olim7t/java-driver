@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core;
 
+import com.google.common.base.Objects;
+
 import com.datastax.driver.core.policies.Policies;
 
 /**
@@ -137,5 +139,17 @@ public class Configuration {
      */
     public QueryOptions getQueryOptions() {
         return queryOptions;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("policies", policies)
+            .add("protocolOptions", protocolOptions)
+            .add("poolingOptions", poolingOptions)
+            .add("socketOptions", socketOptions)
+            .add("metricsOptions", metricsOptions)
+            .add("queryOptions", queryOptions)
+            .toString();
     }
 }

@@ -38,6 +38,11 @@ public interface AuthProvider {
             throw new AuthenticationException(host,
                 String.format("Host %s requires authentication, but no authenticator found in Cluster configuration", host));
         }
+
+        @Override
+        public String toString() {
+            return "NONE";
+        }
     };
 
     /**

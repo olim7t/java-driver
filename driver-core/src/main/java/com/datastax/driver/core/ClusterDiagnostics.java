@@ -91,6 +91,11 @@ class ClusterDiagnostics extends AbstractMBean implements ClusterDiagnosticsMBea
         return manager.isClosed();
     }
 
+    @Override
+    public String dumpConfiguration() {
+        return manager.configuration.toString();
+    }
+
     private static ObjectName buildObjectName(Cluster.Manager manager) {
         try {
             return new ObjectName("com.datastax.driver.core:type=Cluster,name=" + manager.clusterName);

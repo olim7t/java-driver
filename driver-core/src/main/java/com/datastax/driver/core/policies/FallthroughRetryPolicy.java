@@ -86,4 +86,9 @@ public class FallthroughRetryPolicy implements RetryPolicy {
     public RetryDecision onUnavailable(Statement statement, ConsistencyLevel cl, int requiredReplica, int aliveReplica, int nbRetry) {
         return RetryDecision.rethrow();
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

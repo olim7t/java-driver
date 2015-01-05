@@ -15,6 +15,7 @@
  */
 package com.datastax.driver.core.policies;
 
+import com.google.common.base.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,5 +95,12 @@ public class LoggingRetryPolicy implements RetryPolicy {
                 break;
         }
         return decision;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("policy", policy)
+            .toString();
     }
 }

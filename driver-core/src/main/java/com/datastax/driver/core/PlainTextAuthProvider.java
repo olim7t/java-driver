@@ -99,4 +99,9 @@ public class PlainTextAuthProvider implements AuthProvider {
                                    "password", new String(password, Charsets.UTF_8));
         }
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

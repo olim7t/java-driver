@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core;
 
+import com.google.common.base.Objects;
+
 /**
  * Options to configure low-level socket options for the connections kept
  * to the Cassandra hosts.
@@ -183,5 +185,19 @@ public class SocketOptions {
     public SocketOptions setSendBufferSize(int sendBufferSize) {
         this.sendBufferSize = sendBufferSize;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("connectTimeoutMillis", connectTimeoutMillis)
+            .add("readTimeoutMillis", readTimeoutMillis)
+            .add("keepAlive", keepAlive)
+            .add("reuseAddress", reuseAddress)
+            .add("soLinger", soLinger)
+            .add("tcpNoDelay", tcpNoDelay)
+            .add("receiveBufferSize", receiveBufferSize)
+            .add("sendBufferSize", sendBufferSize)
+            .toString();
     }
 }

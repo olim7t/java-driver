@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -694,5 +695,17 @@ public class LatencyAwarePolicy implements ChainableLoadBalancingPolicy, Closeab
         if (childPolicy instanceof CloseableLoadBalancingPolicy)
             ((CloseableLoadBalancingPolicy)childPolicy).close();
         updaterService.shutdown();
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("latencyTracker", latencyTracker)
+            .add("exclusionThreshold", exclusionThreshold)
+            .add("scale", scale)
+            .add("retryPeriod", retryPeriod)
+            .add("minMeasure", minMeasure)
+            .add("childPolicy", childPolicy)
+            .toString();
     }
 }

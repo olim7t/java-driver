@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core.policies;
 
+import com.google.common.base.Objects;
+
 /**
  * A reconnection policy that waits exponentially longer between each
  * reconnection attempt (but keeps a constant delay once a maximum delay is
@@ -94,5 +96,13 @@ public class ExponentialReconnectionPolicy implements ReconnectionPolicy {
 
             return Math.min(baseDelayMs * (1L << attempts++), maxDelayMs);
         }
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("baseDelayMs", baseDelayMs)
+            .add("maxDelayMs", maxDelayMs)
+            .toString();
     }
 }

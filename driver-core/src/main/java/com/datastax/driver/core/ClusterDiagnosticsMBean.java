@@ -74,4 +74,11 @@ public interface ClusterDiagnosticsMBean {
      * @return whether the cluster is closing.
      */
     boolean isClosing();
+
+    /**
+     * Dump the {@code Cluster}'s current configuration.
+     *
+     * @return a text representation of the configuration.
+     */
+    String dumpConfiguration();
 }

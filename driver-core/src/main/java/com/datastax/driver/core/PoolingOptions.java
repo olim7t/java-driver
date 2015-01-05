@@ -15,6 +15,10 @@
  */
 package com.datastax.driver.core;
 
+import java.util.Arrays;
+
+import com.google.common.base.Objects;
+
 /**
  * Options related to connection pooling.
  * <p>
@@ -303,5 +307,16 @@ public class PoolingOptions {
         if (core > max)
             throw new IllegalArgumentException(String.format("Core connections for %s hosts must be less than max (%d > %d)",
                                                              distance, core, max));
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("minSimultaneousRequests", Arrays.toString(minSimultaneousRequests))
+            .add("maxSimultaneousRequests", Arrays.toString(maxSimultaneousRequests))
+            .add("coreConnections", Arrays.toString(coreConnections))
+            .add("maxConnections", Arrays.toString(maxConnections))
+            .add("poolTimeoutMillis", poolTimeoutMillis)
+            .toString();
     }
 }

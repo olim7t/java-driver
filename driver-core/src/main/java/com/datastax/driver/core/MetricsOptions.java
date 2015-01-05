@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.core;
 
+import com.google.common.base.Objects;
+
 /**
  * {@link Metrics} options.
  */
@@ -48,5 +50,12 @@ public class MetricsOptions {
     public boolean isJMXReportingEnabled()
     {
         return jmxEnabled;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+            .add("jmxEnabled", jmxEnabled)
+            .toString();
     }
 }

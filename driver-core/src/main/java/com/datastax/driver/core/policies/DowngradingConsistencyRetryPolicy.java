@@ -194,4 +194,9 @@ public class DowngradingConsistencyRetryPolicy implements RetryPolicy {
         // Tries the biggest CL that is expected to work
         return maxLikelyToWorkCL(aliveReplica);
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }
