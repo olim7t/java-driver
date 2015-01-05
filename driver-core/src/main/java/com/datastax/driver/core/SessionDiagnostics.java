@@ -15,6 +15,9 @@
  */
 package com.datastax.driver.core;
 
+import java.net.InetSocketAddress;
+import java.util.List;
+
 import com.google.common.base.Throwables;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -44,7 +47,19 @@ class SessionDiagnostics extends AbstractMBean implements SessionDiagnosticsMBea
 
     @Override
     public TabularData getConnectionStats() {
-        return ConnectionTabularData.from(session.getState());
+        return HostConnectionsTabularData.from(session.getState());
+    }
+
+    @Override
+    public TabularData getPoolInfo(String hostname, int port) {
+        InetSocketAddress address = new InetSocketAddress(hostname, port);
+        Host host = session.getCluster().getMetadata().getHost(address);
+        if (host == null)
+            throw new IllegalArgumentException("unknown host");
+
+        HostConnectionPool pool = session.pools.get(host);
+        // TODO maybe include trash as well
+        return ConnectionTabularData.from(pool.connections);
     }
 
     private static ObjectName buildObjectName(SessionManager session) {
@@ -57,7 +72,7 @@ class SessionDiagnostics extends AbstractMBean implements SessionDiagnosticsMBea
         }
     }
 
-    static class ConnectionTabularData {
+    static class HostConnectionsTabularData {
         private static final String TYPE_NAME = "Host";
 
         private static final String ROW_DESC = "Host";
@@ -95,6 +110,45 @@ class SessionDiagnostics extends AbstractMBean implements SessionDiagnosticsMBea
                     result.put(new CompositeDataSupport(COMPOSITE_TYPE, ITEM_NAMES,
                         new Object[]{ host.getDatacenter(), host.getRack(), host.toString(),
                             openConnections, inFlightQueries, meanInFlightPerConnection }));
+                }
+                return result;
+            } catch (OpenDataException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    static class ConnectionTabularData {
+        private static final String TYPE_NAME = "Connection";
+
+        private static final String ROW_DESC = "Connection";
+        private static final String[] ITEM_NAMES = new String[]{ "name", "inFlight", "closed" };
+
+        private static final String[] ITEM_DESCS = new String[]{ "Name", "In flight queries", "Closed" };
+
+        private static final OpenType<?>[] ITEM_TYPES = new OpenType[]{ SimpleType.STRING, SimpleType.INTEGER, SimpleType.BOOLEAN };
+
+        private static final CompositeType COMPOSITE_TYPE;
+
+        private static final TabularType TABULAR_TYPE;
+
+        static {
+            try {
+                COMPOSITE_TYPE = new CompositeType(TYPE_NAME, ROW_DESC, ITEM_NAMES, ITEM_DESCS, ITEM_TYPES);
+
+                TABULAR_TYPE = new TabularType(TYPE_NAME, ROW_DESC, COMPOSITE_TYPE, ITEM_NAMES);
+            } catch (OpenDataException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        public static TabularData from(List<PooledConnection> connections) {
+            try {
+                TabularDataSupport result = new TabularDataSupport(TABULAR_TYPE);
+                for (Connection connection : connections) {
+
+                    result.put(new CompositeDataSupport(COMPOSITE_TYPE, ITEM_NAMES,
+                        new Object[]{ connection.name, connection.inFlight.get(), connection.isClosed() }));
                 }
                 return result;
             } catch (OpenDataException e) {

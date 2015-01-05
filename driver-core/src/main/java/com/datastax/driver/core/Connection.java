@@ -53,7 +53,7 @@ class Connection {
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     public final InetSocketAddress address;
-    private final String name;
+    final String name;
 
     private final Channel channel;
     private final Factory factory;

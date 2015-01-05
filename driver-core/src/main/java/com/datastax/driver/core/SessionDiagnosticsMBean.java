@@ -26,4 +26,6 @@ public interface SessionDiagnosticsMBean {
     boolean isClosing();
 
     TabularData getConnectionStats();
+
+    TabularData getPoolInfo(String hostname, int port);
 }
