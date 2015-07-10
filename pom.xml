@@ -67,6 +67,7 @@
     -->
     <scassandra.version>0.4.1</scassandra.version>
     <main.basedir>${project.basedir}</main.basedir>
+    <skipTests>true</skipTests>
   </properties>
 
   <dependencies>
