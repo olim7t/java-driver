@@ -40,6 +40,8 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import javax.net.ssl.SSLEngine;
 import org.slf4j.Logger;
@@ -131,7 +133,8 @@ class Connection {
             bootstrap.handler(
                 new Initializer(this, protocolVersion, protocolOptions.getCompression().compressor(), protocolOptions.getSSLOptions(),
                     factory.configuration.getPoolingOptions().getHeartbeatIntervalSeconds(),
-                    factory.configuration.getNettyOptions()));
+                    factory.configuration.getNettyOptions(),
+                    factory.eventExecutorGroup));
 
             ChannelFuture future = bootstrap.connect(address);
 
@@ -668,6 +671,7 @@ class Connection {
         public final HashedWheelTimer timer;
 
         private final EventLoopGroup eventLoopGroup;
+        final EventExecutorGroup eventExecutorGroup = new DefaultEventExecutorGroup(1);
         private final Class<? extends Channel> channelClass;
 
         private final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
@@ -821,6 +825,7 @@ class Connection {
             // All channels should be closed already, we call this just to be sure. And we know
             // we're not on an I/O thread or anything, so just call await.
             allChannels.close().awaitUninterruptibly();
+            eventExecutorGroup.shutdownGracefully().awaitUninterruptibly();
 
             nettyOptions.onClusterClose(eventLoopGroup);
             timer.stop();
@@ -1261,14 +1266,16 @@ class Connection {
         private final FrameCompressor compressor;
         private final SSLOptions sslOptions;
         private final NettyOptions nettyOptions;
+        private final EventExecutorGroup eventExecutorGroup;
         private final ChannelHandler idleStateHandler;
 
-        public Initializer(Connection connection, ProtocolVersion protocolVersion, FrameCompressor compressor, SSLOptions sslOptions, int heartBeatIntervalSeconds, NettyOptions nettyOptions) {
+        public Initializer(Connection connection, ProtocolVersion protocolVersion, FrameCompressor compressor, SSLOptions sslOptions, int heartBeatIntervalSeconds, NettyOptions nettyOptions, EventExecutorGroup eventExecutorGroup) {
             this.connection = connection;
             this.protocolVersion = protocolVersion;
             this.compressor = compressor;
             this.sslOptions = sslOptions;
             this.nettyOptions = nettyOptions;
+            this.eventExecutorGroup = eventExecutorGroup;
             this.idleStateHandler = new IdleStateHandler(0, 0, heartBeatIntervalSeconds);
         }
 
@@ -1281,25 +1288,25 @@ class Connection {
                 engine.setUseClientMode(true);
                 engine.setEnabledCipherSuites(sslOptions.cipherSuites);
                 SslHandler handler = new SslHandler(engine);
-                pipeline.addLast("ssl", handler);
+                pipeline.addLast(eventExecutorGroup, "ssl", handler);
             }
 
 //            pipeline.addLast("debug", new LoggingHandler(LogLevel.INFO));
 
-            pipeline.addLast("frameDecoder", new Frame.Decoder());
-            pipeline.addLast("frameEncoder", frameEncoder);
+            pipeline.addLast(eventExecutorGroup, "frameDecoder", new Frame.Decoder());
+            pipeline.addLast(eventExecutorGroup, "frameEncoder", frameEncoder);
 
             if (compressor != null) {
-                pipeline.addLast("frameDecompressor", new Frame.Decompressor(compressor));
-                pipeline.addLast("frameCompressor", new Frame.Compressor(compressor));
+                pipeline.addLast(eventExecutorGroup, "frameDecompressor", new Frame.Decompressor(compressor));
+                pipeline.addLast(eventExecutorGroup, "frameCompressor", new Frame.Compressor(compressor));
             }
 
-            pipeline.addLast("messageDecoder", messageDecoder);
-            pipeline.addLast("messageEncoder", messageEncoderFor(protocolVersion));
+            pipeline.addLast(eventExecutorGroup, "messageDecoder", messageDecoder);
+            pipeline.addLast(eventExecutorGroup, "messageEncoder", messageEncoderFor(protocolVersion));
 
-            pipeline.addLast("idleStateHandler", idleStateHandler);
+            pipeline.addLast(eventExecutorGroup, "idleStateHandler", idleStateHandler);
 
-            pipeline.addLast("dispatcher", connection.dispatcher);
+            pipeline.addLast(eventExecutorGroup, "dispatcher", connection.dispatcher);
 
             nettyOptions.afterChannelInitialized(channel);
         }
