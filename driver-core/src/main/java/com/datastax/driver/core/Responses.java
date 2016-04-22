@@ -16,7 +16,6 @@
 package com.datastax.driver.core;
 
 import com.datastax.driver.core.exceptions.*;
-import com.datastax.driver.core.utils.Bytes;
 import io.netty.buffer.ByteBuf;
 
 import java.net.InetSocketAddress;
@@ -427,23 +426,31 @@ class Responses {
             @Override
             public String toString() {
                 StringBuilder sb = new StringBuilder();
-                sb.append("ROWS ").append(metadata).append('\n');
-                for (List<ByteBuffer> row : data) {
-                    for (int i = 0; i < row.size(); i++) {
-                        ByteBuffer v = row.get(i);
-                        if (v == null) {
-                            sb.append(" | null");
-                        } else {
-                            sb.append(" | ");
-                            if (metadata.columns == null)
-                                sb.append(Bytes.toHexString(v));
-                            else
-                                sb.append(metadata.columns.getType(i).deserialize(v));
-                        }
-                    }
-                    sb.append('\n');
+                sb.append("ROWS ");
+
+                if (metadata.columns == null) {
+                    sb.append("without metadata, ");
+                } else {
+                    sb.append("from ")
+                            .append(metadata.columns.getKeyspace(0)).append(".")
+                            .append(metadata.columns.getTable(0))
+                            .append("(").append(metadata.columnCount)
+                            .append(" columns), ");
                 }
-                sb.append("---");
+                int rowCount = data.size();
+                if (rowCount == 0) {
+                    sb.append("no data");
+                } else {
+                    List<ByteBuffer> firstRow = data.peek();
+                    int dataColumnCount = firstRow.size();
+                    assert (dataColumnCount == metadata.columnCount)
+                            : String.format("column count in data (%d) does not match metadata %s",
+                            dataColumnCount, metadata);
+                    sb.append(rowCount)
+                            .append(" rows of ")
+                            .append(dataColumnCount)
+                            .append(" columns");
+                }
                 return sb.toString();
             }
         }

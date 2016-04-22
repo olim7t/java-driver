@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLEngine;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
