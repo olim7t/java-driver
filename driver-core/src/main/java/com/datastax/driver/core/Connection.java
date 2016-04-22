@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLEngine;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -64,7 +63,7 @@ import static io.netty.handler.timeout.IdleState.ALL_IDLE;
  */
 class Connection {
 
-    private static final Logger logger = LoggerFactory.getLogger(Connection.class);
+    static final Logger logger = LoggerFactory.getLogger(Connection.class);
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     private static final boolean DISABLE_COALESCING = SystemProperties.getBoolean("com.datastax.driver.DISABLE_COALESCING", false);
@@ -516,16 +515,18 @@ class Connection {
          * never leave a handler that won't get an answer or be errored out.
          */
         if (isDefunct.get()) {
+            logger.trace("{}, stream {}, write aborted because connection is defunct, removing {} (streamId released)", this, handler.streamId, handler);
             dispatcher.removeHandler(handler, true);
             throw new ConnectionException(address, "Write attempt on defunct connection");
         }
 
         if (isClosed()) {
+            logger.trace("{}, stream {}, write aborted because connection is closed, removing {} (streamId released)", this, handler.streamId, handler);
             dispatcher.removeHandler(handler, true);
             throw new ConnectionException(address, "Connection has been closed");
         }
 
-        logger.trace("{}, stream {}, writing request {}", this, request.getStreamId(), request);
+        logger.trace("{}, stream {}, writing request {} with {}", this, request.getStreamId(), request, handler);
         writer.incrementAndGet();
 
         if (DISABLE_COALESCING) {
@@ -547,7 +548,7 @@ class Connection {
                 writer.decrementAndGet();
 
                 if (!writeFuture.isSuccess()) {
-                    logger.debug("{}, stream {}, Error writing request {}", Connection.this, request.getStreamId(), request);
+                    logger.debug("{}, stream {}, Error writing request {} (streamId released)", Connection.this, request.getStreamId(), request, handler);
                     // Remove this handler from the dispatcher so it don't get notified of the error
                     // twice (we will fail that method already)
                     dispatcher.removeHandler(handler, true);
@@ -935,6 +936,8 @@ class Connection {
 
         public void add(ResponseHandler handler) {
             ResponseHandler old = pending.put(handler.streamId, handler);
+            logger.trace("{}, stream {}, added {}, old = {}",
+                    Connection.this, handler.streamId, handler, old);
             assert old == null;
         }
 
@@ -978,6 +981,7 @@ class Connection {
 
             ResponseHandler handler = pending.remove(streamId);
             streamIdHandler.release(streamId);
+            logger.trace("{}, stream {}, calling back {} (streamId released)", Connection.this, streamId, handler);
             if (handler == null) {
                 /**
                  * During normal operation, we should not receive responses for which we don't have a handler. There is
@@ -1247,10 +1251,18 @@ class Connection {
             return new TimerTask() {
                 @Override
                 public void run(Timeout timeout) {
-                    if (callback.onTimeout(connection, System.nanoTime() - startTime, retryCount))
+                    if (callback.onTimeout(connection, System.nanoTime() - startTime, retryCount)) {
+                        logger.trace("{}, stream {}, cancelling {} because of timeout",
+                                ResponseHandler.this.connection, ResponseHandler.this.streamId, ResponseHandler.this);
                         cancelHandler();
+                    }
                 }
             };
+        }
+
+        @Override
+        public String toString() {
+            return String.format("ResponseHandler@%s(streamId=%d)", Integer.toHexString(hashCode()), streamId);
         }
     }
 
